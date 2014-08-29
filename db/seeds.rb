@@ -1,17 +1,23 @@
 # Mandatory seeds
 
-User.first_or_create :email => 'admin@example.com', :password => 'admin', :password_confirmation => 'admin'
+User.find_or_create_by_email(
+  :email                  => 'admin@example.com', 
+  :name                   => "Admin",
+  :password               => 'admin', 
+  :password_confirmation  => 'admin', 
+  :role                   => "admin"
+)
 
 
 
 settings = Settings.find_or_create_by_id(1)
 data = HashWithIndifferentAccess.new
-data[:main_site_host] = 'ngoaidmap.org'
+data[:main_site_host] = 'iom.dev'
 settings.data = data
 settings.save!
 
 
-Theme.first_or_create :name => 'Garnet',
+Theme.find_or_create_by_name :name => 'Garnet',
              :css_file => '/stylesheets/themes/garnet.css',
              :thumbnail_path => '/images/themes/1/thumbnail.png',
              :data => {
@@ -25,7 +31,7 @@ Theme.first_or_create :name => 'Garnet',
                :georegion_map_fill_color => "#000000"
              }
 
-Theme.first_or_create :name => 'Pink',
+Theme.find_or_create_by_name :name => 'Pink',
              :css_file => '/stylesheets/themes/pink.css',
              :thumbnail_path => '/images/themes/2/thumbnail.png',
              :data => {
@@ -39,7 +45,7 @@ Theme.first_or_create :name => 'Pink',
                :georegion_map_fill_color => "#000000"
              }
 
-Theme.first_or_create :name => 'Blue',
+Theme.find_or_create_by_name :name => 'Blue',
              :css_file => '/stylesheets/themes/blue.css',
              :thumbnail_path => '/images/themes/3/thumbnail.png',
              :data => {
@@ -55,37 +61,37 @@ Theme.first_or_create :name => 'Blue',
 
 # Env seeds (development)
 
-Cluster.first_or_create :name => 'Camp Coordination and Management'
-Cluster.first_or_create :name => 'Early Recovery'
-Cluster.first_or_create :name => 'Education'
-Cluster.first_or_create :name => 'Emergency Telecommunications'
-Cluster.first_or_create :name => 'Food Security and Agriculture'
-Cluster.first_or_create :name => 'Health'
-Cluster.first_or_create :name => 'Logistics'
-Cluster.first_or_create :name => 'Nutrition'
-Cluster.first_or_create :name => 'Protection'
-Cluster.first_or_create :name => 'Shelter and Non-Food Items'
-Cluster.first_or_create :name => 'Water Sanitation and Hygiene'
+Cluster.find_or_create_by_name :name => 'Camp Coordination and Management'
+Cluster.find_or_create_by_name :name => 'Early Recovery'
+Cluster.find_or_create_by_name :name => 'Education'
+Cluster.find_or_create_by_name :name => 'Emergency Telecommunications'
+Cluster.find_or_create_by_name :name => 'Food Security and Agriculture'
+Cluster.find_or_create_by_name :name => 'Health'
+Cluster.find_or_create_by_name :name => 'Logistics'
+Cluster.find_or_create_by_name :name => 'Nutrition'
+Cluster.find_or_create_by_name :name => 'Protection'
+Cluster.find_or_create_by_name :name => 'Shelter and Non-Food Items'
+Cluster.find_or_create_by_name :name => 'Water Sanitation and Hygiene'
 
-Sector.first_or_create :name => 'Agriculture'
-Sector.first_or_create :name => 'Communications'
-Sector.first_or_create :name => 'Disaster Management'
-Sector.first_or_create :name => 'Economic Recovery and Development'
-Sector.first_or_create :name => 'Education'
-Sector.first_or_create :name => 'Environment'
-Sector.first_or_create :name => 'Food Aid'
-Sector.first_or_create :name => 'Health'
-Sector.first_or_create :name => 'Human Rights Democracy and Governance'
-Sector.first_or_create :name => 'Peace and Security'
-Sector.first_or_create :name => 'Protection'
-Sector.first_or_create :name => 'Shelter and Housing'
-Sector.first_or_create :name => 'Water Sanitation and Hygiene'
-Sector.first_or_create :name => 'Other'
+Sector.find_or_create_by_name :name => 'Agriculture'
+Sector.find_or_create_by_name :name => 'Communications'
+Sector.find_or_create_by_name :name => 'Disaster Management'
+Sector.find_or_create_by_name :name => 'Economic Recovery and Development'
+Sector.find_or_create_by_name :name => 'Education'
+Sector.find_or_create_by_name :name => 'Environment'
+Sector.find_or_create_by_name :name => 'Food Aid'
+Sector.find_or_create_by_name :name => 'Health'
+Sector.find_or_create_by_name :name => 'Human Rights Democracy and Governance'
+Sector.find_or_create_by_name :name => 'Peace and Security'
+Sector.find_or_create_by_name :name => 'Protection'
+Sector.find_or_create_by_name :name => 'Shelter and Housing'
+Sector.find_or_create_by_name :name => 'Water Sanitation and Hygiene'
+Sector.find_or_create_by_name :name => 'Other'
 
-Tag.first_or_create :name => 'asia'
-Tag.first_or_create :name => 'africa'
-Tag.first_or_create :name => 'childhood'
-Tag.first_or_create :name => 'earthquake'
+Tag.find_or_create_by_name :name => 'asia'
+Tag.find_or_create_by_name :name => 'africa'
+Tag.find_or_create_by_name :name => 'childhood'
+Tag.find_or_create_by_name :name => 'earthquake'
 
 ##
 
@@ -108,7 +114,7 @@ site.update_attributes(
   :short_description =>'Mapping efforts to reduce poverty and suffering',
   :long_description  =>'On January 12th 2010, a catastrophic earthquake occured at Haiti, leaving more than 250.000 deaths and more than 1.000.000 homeless people. It was one of the biggest disasters in the century. Since then and until now, a huge effort has been made by some of the interaction members',
   :theme             => Theme.find_by_name('Garnet'),
-  :aid_map_image     => File.open(File.join(Rails.root, '/public/images/sites/haiti_img_example.jpg')),
+  # :aid_map_image     => File.open(File.join(Rails.root, '/public/images/sites/haiti_img_example.jpg')),
   :navigate_by_level3 => true,
   :google_analytics_id => 'UA-20618946-2',
   :word_for_regions  => "Communes"
@@ -125,7 +131,7 @@ if (1==0)
   # ===> ABOUT PARENT PAGE
   haiti_about_page = Page.find_or_initialize_by_title_and_site_id('About', haiti_site_id)
 
-  haiti_about_page.update(
+  haiti_about_page.update_attributes(
     :title        => 'About',
     :body         => '',
     :site_id      => haiti_site_id,
@@ -139,7 +145,7 @@ if (1==0)
 
   haiti_child_page = Page.find_or_initialize_by_title_and_site_id_and_parent_id('A-child-page', haiti_site_id, haiti_about_page_id)
 
-  haiti_child_page.update(
+  haiti_child_page.update_attributes(
     :title        => 'A-child-page',
     :body         => '',
     :site_id      => haiti_site_id,
@@ -152,7 +158,7 @@ if (1==0)
   # ===> DATA PARENT PAGE
   page = Page.find_or_initialize_by_title_and_site_id('Data', haiti_site_id)
 
-  page.update(
+  page.update_attributes(
     :title        => 'Data',
     :body         => '',
     :site_id      => haiti_site_id,
@@ -182,7 +188,7 @@ if (1==0)
     :short_description => 'Food security refers to the availability of food and one’s access to it',
     :long_description => 'The Special Programme for Food Security (SPFS) helps governments replicate successful food security practices on a national scale. The SPFS also encourages investment in rural infrastructure, off-farm income generation, urban agriculture and safety nets',
     :theme => Theme.find_by_name('Garnet'),
-    :aid_map_image => File.open(File.join(Rails.root, '/public/images/sites/food_img_example.jpg')),
+    # :aid_map_image => File.open(File.join(Rails.root, '/public/images/sites/food_img_example.jpg')),
     :navigate_by_country => true,
     :navigate_by_level1 => true,
     :word_for_regions => "Country"
@@ -196,6 +202,7 @@ end
 ####################################################################
 
 global_site = Site.find_or_initialize_by_name('global')
+global_id = global_site.id
 
 global_site.update_attributes(
   :name => 'global',
@@ -205,7 +212,7 @@ global_site.update_attributes(
   :short_description => 'Global site to unify all projects',
   :long_description => 'Global site to unify all projects',
   :theme => Theme.find_by_name('Garnet'),
-  :aid_map_image => File.open(File.join(Rails.root, '/public/images/sites/food_img_example.jpg')),
+  # :aid_map_image => File.open(File.join(Rails.root, '/public/images/sites/food_img_example.jpg')),
   :navigate_by_country => true,
   :navigate_by_level1 => true,
   :word_for_regions => "Country"
@@ -220,9 +227,9 @@ global_site.update_attributes(
 
 
   # ===> DATA PARENT PAGE
-  data_page = Page.find_or_initialize_by_title_and_site_id('Data', global_site.id)
+  data_page = Page.find_or_create_by_title_and_site_id('Data', global_site.id)
 
-  data_page.update(
+  data_page.update_attributes(
     :title        => 'Data',
     :body         => '<h3>Top ten things you should know about the data.</h3>
 
@@ -280,9 +287,9 @@ global_site.update_attributes(
 
 
   # ===> DATA CHILD PAGE
-  data_guidance_page = Page.find_or_initialize_by_title_and_site_id_and_parent_id('Data guidance', global_site.id, data_guidance_page_id)
+  data_guidance_page = Page.find_or_create_by_title_and_site_id('Data guidance', global_site.id)
 
-  data_guidance_page.update(
+  data_guidance_page.update_attributes(
     :title        => 'Data guidance',
     :body         => '',
     :site_id      => global_id,
@@ -294,9 +301,9 @@ global_site.update_attributes(
 
 
   # ===> ABOUT PARENT PAGE
-  about_page = Page.find_or_initialize_by_title_and_site_id('About', global_site.id)
+  about_page = Page.find_or_create_by_title_and_site_id('About', global_site.id)
 
-  about_page.update(
+  about_page.update_attributes(
     :title        => 'About',
     :body         => '<p>InterAction’s NGO Aid Map aims to increase the amount of publicly available data on international development and humanitarian response by providing detailed project information through interactive maps and data visualizations.</p>
                       <p>See more.</p>
@@ -332,9 +339,9 @@ global_site.update_attributes(
 
 
   # ===> ABOUT CHILD PAGE
-  history_page = Page.find_or_initialize_by_title_and_site_id_and_parent_id('History', global_site.id, about_page_id)
+  history_page = Page.find_or_create_by_title_and_site_id('History', global_site.id)
 
-  history_page.update(
+  history_page.update_attributes(
     :title        => 'History',
     :body         => '',
     :site_id      => global_id,
@@ -344,9 +351,9 @@ global_site.update_attributes(
     :order_index  => 1
   )
 
-  about_interaction_page = Page.find_or_initialize_by_title_and_site_id_and_parent_id('About InterAction', global_site.id, about_page_id)
+  about_interaction_page = Page.find_or_create_by_title_and_site_id('About InterAction', global_site.id)
 
-  about_interaction_page.update(
+  about_interaction_page.update_attributes(
     :title        => 'About InterAction',
     :body         => "<p>InterAction is an alliance organization in Washington, D.C. of nongovernmental organizations (NGOs). Our 180-plus members work around the world. What unites us is a commitment to working with the world's poor and vulnerable, and a belief that we can make the world a more peaceful, just and prosperous place – together.</p>
                       <p>InterAction serves as a convener, thought leader and voice of our community. Because we want real, long-term change, we work smarter: We mobilize our members to think and act collectively, because we know more is possible that way. We also know that how we get there matters. So we set high standards. We insist on respecting human dignity. We work in partnerships.</p>
@@ -361,9 +368,9 @@ global_site.update_attributes(
     :order_index  => 2
   )
 
-  faq_page = Page.find_or_initialize_by_title_and_site_id_and_parent_id('FAQ´s', global_site.id, about_page_id)
+  faq_page = Page.find_or_create_by_title_and_site_id('FAQ´s', global_site.id)
 
-  faq_page.update(
+  faq_page.update_attributes(
     :title        => 'FAQ´s',
     :body         => '<div id="faqAccordion">
                       <h3>What is NGO Aid Map?</h3>
@@ -454,9 +461,9 @@ global_site.update_attributes(
     :order_index  => 3
   )
 
-  news_and_updates_page = Page.find_or_initialize_by_title_and_site_id_and_parent_id('News and updates', global_site.id, about_page_id)
+  news_and_updates_page = Page.find_or_create_by_title_and_site_id('News and updates', global_site.id)
 
-  news_and_updates_page.update(
+  news_and_updates_page.update_attributes(
     :title        => 'News and updates',
     :body         => '<h3>Blogs</h3>
                       <p>In 2013, NGO Aid Map produced a blog series looking at the lessons learned and challenges encountered over the two years since our initiative launched. This series was written by Laia Grino, Manager of Transparency, Accountability and Results at InterAction.</p>
@@ -482,9 +489,9 @@ global_site.update_attributes(
     :order_index  => 4
   )
 
-  mapping_team_page = Page.find_or_initialize_by_title_and_site_id_and_parent_id('Mapping team', global_site.id, about_page_id)
+  mapping_team_page = Page.find_or_create_by_title_and_site_id('Mapping team', global_site.id)
 
-  mapping_team_page.update(
+  mapping_team_page.update_attributes(
     :title        => 'Mapping team',
     :body         => '<p>Julie Montgomery is the Director of NGO Aid Map and has been leading the initiative since its inception. Read <a href="http://www.interaction.org/users/julie-montgomery" target="_blank">Julie’s full bio on InterAction’s website.</a></p>
 
@@ -506,9 +513,9 @@ global_site.update_attributes(
     :order_index  => 5
   )
 
-  contact_page = Page.find_or_initialize_by_title_and_site_id_and_parent_id('Contact', global_site.id, about_page_id)
+  contact_page = Page.find_or_create_by_title_and_site_id('Contact', global_site.id)
 
-  contact_page.update(
+  contact_page.update_attributes(
     :title        => 'Contact',
     :body         => '<p>Julie Montgomery is the Director of NGO Aid Map and has been leading the initiative since its inception. Read <a href="http://www.interaction.org/users/julie-montgomery" target="_blank">Julie’s full bio on InterAction’s website.</a></p>
 
@@ -541,11 +548,11 @@ global_site.update_attributes(
 #
 ####################################################################
 
-Sector.first_or_create :name => 'Energy'
-Sector.first_or_create :name => 'Humanitarian aid'
-Sector.first_or_create :name => 'Mining and extractive resources'
-Sector.first_or_create :name => 'Non-food relief items (NFIs)'
-Sector.first_or_create :name => 'Safety nets'
+Sector.find_or_create_by_name :name => 'Energy'
+Sector.find_or_create_by_name :name => 'Humanitarian aid'
+Sector.find_or_create_by_name :name => 'Mining and extractive resources'
+Sector.find_or_create_by_name :name => 'Non-food relief items (NFIs)'
+Sector.find_or_create_by_name :name => 'Safety nets'
 
 
 ####################################################################

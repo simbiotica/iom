@@ -490,6 +490,7 @@ SQL
   end
 
   def self.custom_find(site, options = {})
+    return [] if site.nil?
     default_options = {
       :order => 'project_id DESC',
       :random => true,
@@ -1132,7 +1133,7 @@ SQL
 
   def location_presence
     return true if region_ids.present? || country_ids.present?
-    errors.add(:location, 'Sorry, location information is mandatory') if region_ids.blank? && country_ids.blank?
+    errors.add(:location, 'Sorry, location information is mandatory') if !self.new_record? && region_ids.blank? && country_ids.blank?
   end
 
   def dates_consistency

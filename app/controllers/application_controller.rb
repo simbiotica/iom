@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::Base
+  config.relative_url_root = ""
   class NotFound < Exception; end;
   class BrowserIsIE6OrLower < Exception; end;
 
@@ -35,7 +36,7 @@ class ApplicationController < ActionController::Base
         when 'development'
           # '192.168.1.140'  # to test in ie
           # 'ngoaidmap.dev'
-          'localhost'
+          'iom.dev'
         when 'test'
           'example.com'
         when 'staging'
@@ -61,6 +62,8 @@ class ApplicationController < ActionController::Base
       if request.subdomain == 'www' || request.subdomain == ''
         @site = Site.find_by_name('global')
       elsif !Site.find_by_url(request.host) || Site.find_by_url(request.host).status == false || Site.find_by_url(request.host).featured == false 
+        Rails.logger.debug request.host
+        Rails.logger.debug Site.find_by_url(request.host).inspect
         redirect_to "http://ngoaidmap.org" and return
       elsif @site = Site.published.where(:url => request.host).first
             #unless @site = Site.find_by_name("global")

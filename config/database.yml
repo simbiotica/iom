@@ -1,19 +1,16 @@
 development:
   adapter: postgresql
-  template: template_postgis
-  encoding: unicode
   host: localhost
   database: iom_development
-  username: postgres
-  password:
+  username: 
+  password: 
 
 test:
   adapter: postgresql
-  template: template_postgis
-  encoding: unicode
+  host: localhost
   database: iom_test
-  username: postgres
-  password:
+  username: 
+  password: 
 
 staging:
   adapter: postgresql

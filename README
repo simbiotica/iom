@@ -16,22 +16,21 @@ Take a look at the database schema at db/db_schema.pdf to get a better idea of w
 
 NGOAIDMAP is a Ruby on Rails application. The dependencies are:
 
- * Ruby 1.8.7
- * PostgreSQL 8.4 or higher.
- * Postgis 1.5.2
- * Bundler gem
+ * Ruby 2.0.x+
+ * PostgreSQL 9.2 or higher.
+ * Postgis 2.X+
+ * Bundler 
 
 == Installation
 
-        rvm use 1.8.7
-        rvm gemset create iom
-        rvm use 1.8.7@iom
-        gem install bundler
-        git clone git://github.com/Vizzuality/iom.git
+        git clone git://github.com/Nightsprout/iom.git
         cd iom
+        # follow any RVM prompts if any
         bundle install
         # edit config/database.yml
+        cp config/app_config.yml.sample config/app_config.yml
+        # edit config/app_config.yml if necessary
         rake db:setup
-        rails s
-        
-        
+
+
+

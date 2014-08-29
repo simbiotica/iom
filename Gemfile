@@ -1,10 +1,10 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.0.19'
+gem 'rails', '3.0.20'
 
 # PostgreSQL
-gem 'pg',                       '0.9.0'
-gem 'nofxx-georuby',                          :require => 'geo_ruby'
+gem 'pg'
+gem 'nofxx-georuby',           :require => 'geo_ruby'
 gem 'spatial_adapter'
 
 gem 'newrelic_rpm'
@@ -45,5 +45,6 @@ group :test, :development do
   gem 'capybara', '~> 0.4.0'
   gem 'webrat'
   gem 'database_cleaner', :tag => 'v0.5.2'
-  gem 'ruby-debug'
+  gem 'byebug' # replaces ruby-debug for ruby 2.0+
+  gem 'better_errors'
 end

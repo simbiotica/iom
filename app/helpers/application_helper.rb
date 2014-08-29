@@ -168,7 +168,7 @@ HTML
     lis << content_tag(:li, "Others - #{values.last}", :class => 'pos3') if projects.count > 3
 
     ul    = content_tag :ul, raw(lis), :class => 'chart'
-    chart = image_tag "http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00", :class => 'pie_chart'
+    chart = "<img src='http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00' class='pie_chart' />"
     [ul, chart]
   end
 
@@ -186,7 +186,7 @@ HTML
     lis << content_tag(:li, "Others - #{values.last}", :class => 'pos3') if organizations.count > 3
     ul    = content_tag :ul, raw(lis), :class => 'chart'
     url = "http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00"
-    chart = image_tag "http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00", :class => 'pie_chart'
+    chart = "<img src='http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00' class='pie_chart' />"
     [ul, chart]
   end
 

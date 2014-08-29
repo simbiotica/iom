@@ -1,9 +1,9 @@
 namespace :db do
   desc 'Remove,Create,Seed and load data'
-  task :reset => %w(db:drop db:create db:migrate iom:data:load_countries db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
+  task :iom_reset => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
 
   desc 'reset 1'
-  task :reset_1 => %w(db:drop db:create db:migrate iom:data:load_countries)
+  task :reset_1 => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries)
 
   desc 'reset 2'
   task :reset_2 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
@@ -13,6 +13,12 @@ namespace :db do
 end
 
 namespace :iom do
+
+  task :postgis_init => :environment do
+    DB = ActiveRecord::Base.connection
+    DB.execute "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology; CREATE EXTENSION fuzzystrmatch;  CREATE EXTENSION postgis_tiger_geocoder;"
+  end
+
   namespace :data do
     desc "Load organizations and projects data"
     task :all => %w(load_adm_levels load_orgs load_projects)
@@ -21,11 +27,11 @@ namespace :iom do
     task :load_countries => :environment do
       DB = ActiveRecord::Base.connection
       system("unzip -o #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.zip -d #{Rails.root}/db/data/countries/")
-      system("shp2pgsql -d -s 4326 -gthe_geom -i -WLATIN1 #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.shp public.tmp_countries | psql -Upostgres -diom_#{RAILS_ENV}")
+      system("shp2pgsql -d -s 4326 -gthe_geom -i -WLATIN1 #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.shp public.tmp_countries | psql -diom_#{RAILS_ENV}")
 
       #Insert the country and get the value
       sql="INSERT INTO countries(\"name\",code,center_lat,center_lon,iso2_code,iso3_code)
-      SELECT name,iso3,y(ST_Centroid(the_geom)),x(ST_Centroid(the_geom)),iso2,iso3 from tmp_countries
+      SELECT name,iso3,st_y(ST_Centroid(the_geom)),st_x(ST_Centroid(the_geom)),iso2,iso3 from tmp_countries
       where iso3 not in (select code from countries)"
       DB.execute sql
 
@@ -195,7 +201,7 @@ namespace :iom do
         unless Project.find_by_intervention_id(row.ipc)
           p = Project.new
           #puts "#{row.ipc} : #{row.project_title}"
-          p.primary_organization      = o
+          p.primary_organization_id   = o.id
           p.intervention_id           = row.ipc
           p.name                      = (row.project_title.blank? ? "Unknown" : row.project_title)
           p.description               = row.project_description
