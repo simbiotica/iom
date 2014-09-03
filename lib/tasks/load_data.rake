@@ -26,8 +26,18 @@ namespace :iom do
     desc "load country data"
     task :load_countries => :environment do
       DB = ActiveRecord::Base.connection
-      system("unzip -o #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.zip -d #{Rails.root}/db/data/countries/")
-      system("shp2pgsql -d -s 4326 -gthe_geom -i -WLATIN1 #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.shp public.tmp_countries | psql -diom_#{RAILS_ENV}")
+      
+      # system("unzip -o #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.zip -d #{Rails.root}/db/data/countries/")
+      # system("shp2pgsql -d -s 4326 -gthe_geom -i -WLATIN1 #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.shp public.tmp_countries > ")
+
+      sql = File.read("#{Rails.root}/db/data/countries/tmp_countries.sql")
+      statements = sql.split(/;$/)
+      statements.pop  # the last empty statement
+
+      statements.each do |statement|
+        DB.execute(statement)
+      end
+      
 
       #Insert the country and get the value
       sql="INSERT INTO countries(\"name\",code,center_lat,center_lon,iso2_code,iso3_code)
