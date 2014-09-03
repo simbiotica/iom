@@ -7,6 +7,7 @@ gem 'rails', '3.0.20'
 gem 'pg'
 gem 'nofxx-georuby',           :require => 'geo_ruby'
 gem 'spatial_adapter'
+gem 'puma'
 
 gem 'newrelic_rpm'
 gem "will_paginate", "3.0.pre2"
@@ -37,7 +38,6 @@ group :development do
   gem 'wirble'
   gem 'railroady'
   gem 'mail_view', :git => 'https://github.com/37signals/mail_view.git'
-  gem 'puma'
 end
 
 group :test, :development do
