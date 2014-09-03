@@ -45,6 +45,4 @@ group :test, :development do
   gem 'capybara', '~> 0.4.0'
   gem 'webrat'
   gem 'database_cleaner', :tag => 'v0.5.2'
-  gem 'byebug' # replaces ruby-debug for ruby 2.0+
-  gem 'better_errors'
 end

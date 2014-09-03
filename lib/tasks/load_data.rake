@@ -75,47 +75,56 @@ namespace :iom do
       DB.execute "UPDATE regions SET the_geom_geojson=ST_AsGeoJSON(the_geom,6) where level=1"
 
 
-      # csv = CsvMapper.import("#{Rails.root}/db/data/gadm_data/gadm_level2.csv") do
-      #   read_attributes_from_file
-      # end
-      # csv.each do |row|
-      #   if (Region.find_by_gadm_id_and_level(row.gadm2_id,2).blank?)
-      #     r = Region.new
-      #     r.name = row.name
-      #     r.level = 2
-      #     r.country = Country.find_by_code(row.iso)
-      #     r.center_lat = row.lat
-      #     r.center_lon = row.lon
-      #     r.gadm_id = row.gadm2_id
-      #     r.parent_region_id = Region.find_by_gadm_id_and_level(row.gadm1_id,1).id
-      #     r.ia_name = row.ia_name
-      #     r.save!
-      #     puts "created: 2 #{row.name}"
-      #   else
-      #     puts "already existing: 2 #{row.name}"
-      #   end
-      # end
-      #
-      # csv = CsvMapper.import("#{Rails.root}/db/data/gadm_data/gadm_level3.csv") do
-      #   read_attributes_from_file
-      # end
-      # csv.each do |row|
-      #   if (Region.find_by_gadm_id_and_level(row.gadm3_id,3).blank?)
-      #     r = Region.new
-      #     r.name = row.name
-      #     r.level = 3
-      #     r.country = Country.find_by_code(row.iso)
-      #     r.center_lat = row.lat
-      #     r.center_lon = row.lon
-      #     r.gadm_id = row.gadm3_id
-      #     r.ia_name = row.ia_name
-      #     r.parent_region_id = Region.find_by_gadm_id_and_level(row.gadm2_id,2).id
-      #     r.save!
-      #     puts "created: 3 #{row.name}"
-      #   else
-      #     puts "already existing: 3 #{row.name}"
-      #   end
-      # end
+      csv = CsvMapper.import("#{Rails.root}/db/data/gadm_data/gadm_level2.csv") do
+        read_attributes_from_file
+      end
+      csv.each do |row|
+        begin
+          if (Region.find_by_gadm_id_and_level(row.gadm2_id,2).blank?)
+            r = Region.new
+            r.name = row.name
+            r.level = 2
+            r.country = Country.find_by_code(row.iso)
+            r.center_lat = row.lat
+            r.center_lon = row.lon
+            r.gadm_id = row.gadm2_id
+            r.parent_region_id = Region.find_by_gadm_id_and_level(row.gadm1_id,1).id
+            r.ia_name = row.ia_name
+            r.save!
+            puts "created: 2 #{row.name}"
+          else
+            puts "already existing: 2 #{row.name}"
+          end
+        rescue 
+          puts "Error"
+        end
+
+      end
+      
+      csv = CsvMapper.import("#{Rails.root}/db/data/gadm_data/gadm_level3.csv") do
+        read_attributes_from_file
+      end
+      csv.each do |row|
+        begin
+          if (Region.find_by_gadm_id_and_level(row.gadm3_id,3).blank?)
+            r = Region.new
+            r.name = row.name
+            r.level = 3
+            r.country = Country.find_by_code(row.iso)
+            r.center_lat = row.lat
+            r.center_lon = row.lon
+            r.gadm_id = row.gadm3_id
+            r.ia_name = row.ia_name
+            r.parent_region_id = Region.find_by_gadm_id_and_level(row.gadm2_id,2).id
+            r.save!
+            puts "created: 3 #{row.name}"
+          else
+            puts "already existing: 3 #{row.name}"
+          end
+        rescue
+          puts "Error"
+        end
+      end
     end
 
     desc 'Load organizations data'
@@ -199,224 +208,231 @@ namespace :iom do
           next
         end
         unless Project.find_by_intervention_id(row.ipc)
-          p = Project.new
-          #puts "#{row.ipc} : #{row.project_title}"
-          p.primary_organization_id   = o.id
-          p.intervention_id           = row.ipc
-          p.name                      = (row.project_title.blank? ? "Unknown" : row.project_title)
-          p.description               = row.project_description
-          p.activities                = row.project_activities
-          p.additional_information    = row.additional_information
-          p.awardee_type              = row.awardee_type
-          p.verbatim_location         = row.cityvillage
-          p.calculation_of_number_of_people_reached = row.calculation_of_number_of_people_reached
-          p.project_needs             = row.project_needs
-          p.idprefugee_camp           = row.idprefugee_camp
+          begin 
+            p = Project.new
+            #puts "#{row.ipc} : #{row.project_title}"
+            p.primary_organization_id   = o.id
+            p.intervention_id           = row.ipc
+            p.name                      = (row.project_title.blank? ? "Unknown" : row.project_title)
+            p.description               = row.project_description || "n/a"
+            p.activities                = row.project_activities
+            p.additional_information    = row.additional_information
+            p.awardee_type              = row.awardee_type
+            p.verbatim_location         = row.cityvillage
+            p.calculation_of_number_of_people_reached = row.calculation_of_number_of_people_reached
+            p.project_needs             = row.project_needs
+            p.idprefugee_camp           = row.idprefugee_camp
 
-          unless row.est_start_date.blank?
-            begin
-              if(row.est_end_date=="2/29/2010")
-                row.est_end_date="3/1/2010"
-              end
-              p.start_date = Date.strptime(row.est_start_date, '%m/%d/%Y')
-            rescue
-              begin
-                p.start_date = Date.parse(row.est_start_date)
-              rescue
-                puts "Invalid start date: #{row.est_start_date}. Ignoring...."
-                p.start_date = nil
-              end
-            end
-          end
-
-          unless row.est_end_date.blank? or row.est_end_date=="Ongoing"
-            begin
-              p.end_date = Date.strptime(row.est_end_date, '%m/%d/%Y')
-            rescue
-              begin
-                p.end_date = Date.parse(row.est_end_date)
-              rescue
-                puts "Invalid end date: #{row.est_end_date}. Ignoring...."
-                p.end_date = nil
-              end
-            end
-          end
-
-          if p.end_date && p.start_date && p.end_date < p.start_date
-            puts p.name
-            puts row.est_start_date
-            puts row.est_end_date
-            next
-          end
-
-          p.budget                    = row.budget.to_money.dollars unless (row.budget.blank?)
-          p.cross_cutting_issues      = row.crosscutting_issues
-          p.implementing_organization = row.implementing_organizations
-          p.partner_organizations     = row.partner_organizations
-          p.estimated_people_reached  = row.number_of_people_reached_target
-          p.target                    = row.target_groups
-          p.contact_person            = row.contact_name
-          p.contact_position          = row.contact_title
-          p.contact_email             = row.contact_email
-          p.website                   = row.website
-          unless row.date_provided.blank?
-            begin
-              p.date_provided = Date.strptime(row.date_provided, '%m/%d/%Y')
-            rescue
-              begin
-                p.date_provided = Date.parse(row.date_provided)
-              rescue
-                p.date_provided = nil
-                puts "Invalid date provided: #{row.date_provided}. Ignoring...."
-              end
-            end
-          end
-          unless row.date_updated.blank?
-            begin
-              p.date_updated = Date.strptime(row.date_updated, '%m/%d/%Y')
-            rescue
-              begin
-                p.date_updated = Date.parse(row.date_updated)
-              rescue
-                p.date_updated = nil
-                puts "Invalid date updated: #{row.date_updated}. Ignoring...."
-              end
-            end
-          end
-
-          # Relations
-          #########################
-
-          # -->Clusters
-          if(!row.clusters.blank?)
-            parsed_clusters = row.clusters.split(",").map{|e|e.strip}
-            parsed_clusters.each do |clus|
-              clust = Cluster.find_by_name(clus.strip)
-              if clust
-                p.clusters << clust
-              else
-                puts "CLUSTER NOT FOUND: #{clus}"
-              end
-            end
-          end
-
-          # -->Sectors
-          # they come separated by commas
-          if(!row.ia_sectors.blank?)
-            parsed_sectors = row.ia_sectors.split(",").map{|e|e.strip}
-            parsed_sectors.each do |sec|
-              sect = Sector.find_by_name(sec.strip)
-              if sect
-                p.sectors << sect
-              else
-                puts "SECTOR NOT FOUND: #{sec}"
-              end
-            end
-          end
-
-          # -->Donor
-          if(!row.donors.blank?)
-            parsed_donors = row.donors.split(",").map{|e|e.strip}
-            parsed_donors.each do |don|
-
-              donor= Donor.where("name ilike ?",don).first
-              if(!donor)
-                donor = Donor.new
-                donor.name =don
-                donor.save!
-              end
-              donation = Donation.new
-              donation.project = p
-              donation.donor = donor
-              p.donations << donation
-            end
-          end
-
-          p.save!
-
-          # -->Country
-          if (!row.country.blank?)
-            country = Country.where("name ilike ?",row.country.strip).select(Country.custom_fields).first
-            if(country)
-              p.countries  << country
+            if row.est_start_date.blank?
+              p.start_date = Time.now - 1.year
             else
-              puts "ALERT: COUNTRY NOT FOUND #{row.country}"
-            end
-          end
-
-          @nation_wide = false
-          multi_point=""
-          reg3=nil
-          if(!row._3rd_administrative_level.blank?)
-            parsed_adm3 = row._3rd_administrative_level.split(",").map{|e|e.strip}
-            if parsed_adm3.size == 1 && parsed_adm3 == ["Nation-wide"]
-              puts "importing Nation wide"
-              @nation_wide = true
-            end
-            locations = Array.new
-            # if(!row.latitude.blank? and !row.longitude.blank?)
-            #   coords_lat_split=row.latitude.split(",").map{|e|e.strip}
-            #   coords_lon_split=row.longitude.split(",").map{|e|e.strip}
-            #   count = 0
-            #   coords_lat_split.each do |lat_split|
-            #     if(lat_split.to_f!=0 and coords_lon_split[count].to_f!=0)
-            #       locations << "#{lat_split} #{coords_lon_split[count]}"
-            #     end
-            #     count = count+1
-            #   end
-            # end
-
-            if @nation_wide == true
-              puts
-              puts "Importing Nation wide project: all regions from level 3"
-              puts
-              regions3 = Region.where("level=? and country_id=?",3,country.id).select(Region.custom_fields).all
-              regions3.each do |reg3|
-                p.regions  << reg3
-                if(locations.count<1)
-                  reg_sel = Region.find_by_id(reg3.id)
-                  res = "#{reg_sel.center_lon} #{reg_sel.center_lat}"
-                  locations << res
+              begin
+                if(row.est_end_date=="2/29/2010")
+                  row.est_end_date="3/1/2010"
                 end
-                # Add the herarchy
-                region_level2= Region.find_by_id(reg3.parent_region_id)
-                p.regions  << region_level2
-
-                region_level1= Region.find_by_id(region_level2.parent_region_id)
-                p.regions  << region_level1
+                p.start_date = Date.strptime(row.est_start_date, '%m/%d/%Y')
+              rescue
+                begin
+                  p.start_date = Date.parse(row.est_start_date)
+                rescue
+                  puts "Invalid start date: #{row.est_start_date}. Ignoring...."
+                  p.start_date = nil
+                end
               end
+            end
+
+            if row.est_end_date.blank? or row.est_end_date=="Ongoing"
+              p.end_date = Time.now + 1.year
             else
-              parsed_adm3.each do |region_name|
-                reg3 = Region.where("ia_name ilike ? and level=? and country_id=?",region_name.strip,3,country.id).select(Region.custom_fields).first
-                if(reg3)
+              begin
+                p.end_date = Date.strptime(row.est_end_date, '%m/%d/%Y')
+              rescue
+                begin
+                  p.end_date = Date.parse(row.est_end_date)
+                rescue
+                  puts "Invalid end date: #{row.est_end_date}. Ignoring...."
+                  p.end_date = nil
+                end
+              end
+            end
+
+            if p.end_date && p.start_date && p.end_date < p.start_date
+              puts p.name
+              puts row.est_start_date
+              puts row.est_end_date
+              next
+            end
+
+            p.budget                    = row.budget.to_money.dollars unless (row.budget.blank?)
+            p.cross_cutting_issues      = row.crosscutting_issues
+            p.implementing_organization = row.implementing_organizations
+            p.partner_organizations     = row.partner_organizations
+            p.estimated_people_reached  = row.number_of_people_reached_target
+            p.target                    = row.target_groups
+            p.contact_person            = row.contact_name
+            p.contact_position          = row.contact_title
+            p.contact_email             = row.contact_email
+            p.website                   = row.website
+            unless row.date_provided.blank?
+              begin
+                p.date_provided = Date.strptime(row.date_provided, '%m/%d/%Y')
+              rescue
+                begin
+                  p.date_provided = Date.parse(row.date_provided)
+                rescue
+                  p.date_provided = nil
+                  puts "Invalid date provided: #{row.date_provided}. Ignoring...."
+                end
+              end
+            end
+            unless row.date_updated.blank?
+              begin
+                p.date_updated = Date.strptime(row.date_updated, '%m/%d/%Y')
+              rescue
+                begin
+                  p.date_updated = Date.parse(row.date_updated)
+                rescue
+                  p.date_updated = nil
+                  puts "Invalid date updated: #{row.date_updated}. Ignoring...."
+                end
+              end
+            end
+
+            # Relations
+            #########################
+
+            # -->Clusters
+            if(!row.clusters.blank?)
+              parsed_clusters = row.clusters.split(",").map{|e|e.strip}
+              parsed_clusters.each do |clus|
+                clust = Cluster.find_by_name(clus.strip)
+                if clust
+                  p.clusters << clust
+                else
+                  puts "CLUSTER NOT FOUND: #{clus}"
+                end
+              end
+            end
+
+            # -->Sectors
+            # they come separated by commas
+            if(!row.ia_sectors.blank?)
+              parsed_sectors = row.ia_sectors.split(",").map{|e|e.strip}
+              parsed_sectors.each do |sec|
+                sect = Sector.find_by_name(sec.strip)
+                if sect
+                  p.sectors << sect
+                else
+                  puts "SECTOR NOT FOUND: #{sec}"
+                end
+              end
+            end
+
+            # -->Donor
+            if(!row.donors.blank?)
+              parsed_donors = row.donors.split(",").map{|e|e.strip}
+              parsed_donors.each do |don|
+
+                donor= Donor.where("name ilike ?",don).first
+                if(!donor)
+                  donor = Donor.new
+                  donor.name =don
+                  donor.save!
+                end
+                donation = Donation.new
+                donation.project = p
+                donation.donor = donor
+                p.donations << donation
+              end
+            end
+
+            p.save!
+
+            # -->Country
+            if (!row.country.blank?)
+              country = Country.where("name ilike ?",row.country.strip).select(Country.custom_fields).first
+              if(country)
+                p.countries  << country
+              else
+                puts "ALERT: COUNTRY NOT FOUND #{row.country}"
+              end
+            end
+
+            @nation_wide = false
+            multi_point=""
+            reg3=nil
+            if(!row._3rd_administrative_level.blank?)
+              parsed_adm3 = row._3rd_administrative_level.split(",").map{|e|e.strip}
+              if parsed_adm3.size == 1 && parsed_adm3 == ["Nation-wide"]
+                puts "importing Nation wide"
+                @nation_wide = true
+              end
+              locations = Array.new
+              # if(!row.latitude.blank? and !row.longitude.blank?)
+              #   coords_lat_split=row.latitude.split(",").map{|e|e.strip}
+              #   coords_lon_split=row.longitude.split(",").map{|e|e.strip}
+              #   count = 0
+              #   coords_lat_split.each do |lat_split|
+              #     if(lat_split.to_f!=0 and coords_lon_split[count].to_f!=0)
+              #       locations << "#{lat_split} #{coords_lon_split[count]}"
+              #     end
+              #     count = count+1
+              #   end
+              # end
+
+              if @nation_wide == true
+                puts
+                puts "Importing Nation wide project: all regions from level 3"
+                puts
+                regions3 = Region.where("level=? and country_id=?",3,country.id).select(Region.custom_fields).all
+                regions3.each do |reg3|
                   p.regions  << reg3
                   if(locations.count<1)
                     reg_sel = Region.find_by_id(reg3.id)
                     res = "#{reg_sel.center_lon} #{reg_sel.center_lat}"
                     locations << res
                   end
-
-                  #Add the herarchy
+                  # Add the herarchy
                   region_level2= Region.find_by_id(reg3.parent_region_id)
                   p.regions  << region_level2
 
                   region_level1= Region.find_by_id(region_level2.parent_region_id)
                   p.regions  << region_level1
-                else
-                  puts "ALERT: REGION LEVEL 3 NOT FOUND #{region_name}"
+                end
+              else
+                parsed_adm3.each do |region_name|
+                  reg3 = Region.where("ia_name ilike ? and level=? and country_id=?",region_name.strip,3,country.id).select(Region.custom_fields).first
+                  if(reg3)
+                    p.regions  << reg3
+                    if(locations.count<1)
+                      reg_sel = Region.find_by_id(reg3.id)
+                      res = "#{reg_sel.center_lon} #{reg_sel.center_lat}"
+                      locations << res
+                    end
+
+                    #Add the herarchy
+                    region_level2= Region.find_by_id(reg3.parent_region_id)
+                    p.regions  << region_level2
+
+                    region_level1= Region.find_by_id(region_level2.parent_region_id)
+                    p.regions  << region_level1
+                  else
+                    puts "ALERT: REGION LEVEL 3 NOT FOUND #{region_name}"
+                  end
                 end
               end
+              multi_point = nil
+              multi_point = "ST_MPointFromText('MULTIPOINT(#{locations.join(',')})',4326)" unless (locations.length<1)
             end
-            multi_point = nil
-            multi_point = "ST_MPointFromText('MULTIPOINT(#{locations.join(',')})',4326)" unless (locations.length<1)
-          end
 
-          #save the Geom that we created before
-          if(!multi_point.blank?)
-            sql="UPDATE projects SET the_geom=#{multi_point} WHERE id=#{p.id}"
-            DB.execute sql
+            #save the Geom that we created before
+            if(!multi_point.blank?)
+              sql="UPDATE projects SET the_geom=#{multi_point} WHERE id=#{p.id}"
+              DB.execute sql
+            end
+          rescue 
+            p "Error"
           end
-
         else
           puts "Project \"#{row.project_title}\" ALREADY IMPORTED"
         end
