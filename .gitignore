@@ -16,7 +16,5 @@ update/
 .sass-cache
 node_modules
 public/.tmp
-public/dist
-public/app/vendor
 
 app/views_old
