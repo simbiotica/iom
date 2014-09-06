@@ -1,3 +1,20 @@
+# == Schema Information
+#
+# Table name: countries
+#
+#  id               :integer          not null, primary key
+#  name             :string(255)
+#  code             :string(255)
+#  center_lat       :float
+#  center_lon       :float
+#  the_geom         :string           multi_polygon, 4326
+#  wiki_url         :string(255)
+#  wiki_description :text
+#  iso2_code        :string(255)
+#  iso3_code        :string(255)
+#  the_geom_geojson :text
+#
+
 require File.expand_path('../../test_helper', __FILE__)
 
 class CountryTest < ActiveSupport::TestCase

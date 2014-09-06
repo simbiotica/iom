@@ -1,3 +1,12 @@
+# == Schema Information
+#
+# Table name: tags
+#
+#  id    :integer          not null, primary key
+#  name  :string(255)
+#  count :integer          default(0)
+#
+
 require File.expand_path('../../test_helper', __FILE__)
 
 class TagTest < ActiveSupport::TestCase

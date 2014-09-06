@@ -2,7 +2,7 @@
 #
 # Table name: projects
 #
-#  id                                      :integer         not null, primary key
+#  id                                      :integer          not null, primary key
 #  name                                    :string(2000)
 #  description                             :text
 #  primary_organization_id                 :integer
@@ -13,14 +13,14 @@
 #  end_date                                :date
 #  budget                                  :float
 #  target                                  :text
-#  estimated_people_reached                :integer(8)
+#  estimated_people_reached                :integer
 #  contact_person                          :string(255)
 #  contact_email                           :string(255)
 #  contact_phone_number                    :string(255)
 #  site_specific_information               :text
 #  created_at                              :datetime
 #  updated_at                              :datetime
-#  the_geom                                :string
+#  the_geom                                :string           geometry, 4326
 #  activities                              :text
 #  intervention_id                         :string(255)
 #  additional_information                  :text
@@ -33,6 +33,7 @@
 #  calculation_of_number_of_people_reached :text
 #  project_needs                           :text
 #  idprefugee_camp                         :text
+#  organization_id                         :string(255)
 #
 
 class Project < ActiveRecord::Base

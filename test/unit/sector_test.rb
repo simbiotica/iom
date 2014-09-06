@@ -1,3 +1,11 @@
+# == Schema Information
+#
+# Table name: sectors
+#
+#  id   :integer          not null, primary key
+#  name :string(255)
+#
+
 require File.expand_path('../../test_helper', __FILE__)
 
 class SectorTest < ActiveSupport::TestCase

@@ -1,3 +1,20 @@
+# == Schema Information
+#
+# Table name: changes_history_records
+#
+#  id               :integer          not null, primary key
+#  user_id          :integer
+#  when             :datetime
+#  how              :text
+#  created_at       :datetime
+#  updated_at       :datetime
+#  what_id          :integer
+#  what_type        :string(255)
+#  reviewed         :boolean          default(FALSE)
+#  who_email        :string(255)
+#  who_organization :string(255)
+#
+
 class ChangesHistoryRecord < ActiveRecord::Base
   belongs_to :who, :class_name => 'User', :foreign_key => :user_id
   belongs_to :what, :polymorphic => true

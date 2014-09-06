@@ -2,7 +2,7 @@
 #
 # Table name: organizations
 #
-#  id                              :integer         not null, primary key
+#  id                              :integer          not null, primary key
 #  name                            :string(255)
 #  description                     :text
 #  budget                          :float
@@ -49,6 +49,15 @@
 #  media_contact_position          :string(255)
 #  media_contact_phone_number      :string(255)
 #  media_contact_email             :string(255)
+#  main_data_contact_name          :string(255)
+#  main_data_contact_position      :string(255)
+#  main_data_contact_phone_number  :string(255)
+#  main_data_contact_email         :string(255)
+#  main_data_contact_zip           :string(255)
+#  main_data_contact_city          :string(255)
+#  main_data_contact_state         :string(255)
+#  main_data_contact_country       :string(255)
+#  organization_id                 :string(255)
 #
 
 class Organization < ActiveRecord::Base

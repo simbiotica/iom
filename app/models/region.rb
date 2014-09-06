@@ -2,7 +2,7 @@
 #
 # Table name: regions
 #
-#  id               :integer         not null, primary key
+#  id               :integer          not null, primary key
 #  name             :string(255)
 #  level            :integer
 #  country_id       :integer
@@ -10,7 +10,7 @@
 #  center_lat       :float
 #  center_lon       :float
 #  path             :string(255)
-#  the_geom         :string
+#  the_geom         :string           geometry, 4326
 #  gadm_id          :integer
 #  wiki_url         :string(255)
 #  wiki_description :text
