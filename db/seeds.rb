@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Mandatory seeds
 
 User.find_or_create_by_email(
