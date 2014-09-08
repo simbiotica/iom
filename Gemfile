@@ -1,5 +1,5 @@
 source 'http://rubygems.org'
-ruby '1.8.7'
+ruby '1.9.3'
 
 gem 'rails', '3.0.20'
 
@@ -18,7 +18,7 @@ gem 'csv-mapper'
 gem 'fastercsv'
 gem 'money'
 gem 'geokit'
-gem 'nokogiri', '< 1.6.0'
+# gem 'nokogiri', '< 1.6.0'
 gem 'memcachier'
 gem 'dalli'
 gem 'spreadsheet'
