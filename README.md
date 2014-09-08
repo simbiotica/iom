@@ -8,7 +8,7 @@ It is probably a very specific application to be used directly, but the ideas an
 
 NGOAIDMAP is a project that allows you to create websites about projects around a certain topic. For example haiti or foodsecurity. 
 
-The database consist of 4 main tables: "projects" done by "organizations" funded by "donors" which are included in different "sites".
+The database consist of 4 main tables (and many supporting tables): "projects" done by "organizations" funded by "donors" which are included in different "sites".
 
 Take a look at the database schema at db/db_schema.pdf to get a better idea of what the project does.
 
@@ -23,17 +23,17 @@ NGOAIDMAP is a Ruby on Rails application. The dependencies are:
 
 ## Installation
 
- * git clone git://github.com/Nightsprout/iom.git
- * cd iom
- * # follow any RVM prompts if any
- * bundle install
- * # edit config/database.yml
- * cp config/app_config.yml.sample config/app_config.yml
- * # edit config/app_config.yml if necessary
- * rake db:iom_reset
+ * ```git clone git://github.com/Nightsprout/iom.git```
+ * ```cd iom```
+ * follow any RVM prompts if any
+ * ```bundle install```
+ * edit config/database.yml
+ * ```cp config/app_config.yml.sample config/app_config.yml```
+ * edit config/app_config.yml if necessary
+ * ```rake db:iom_reset```
 
 ### Install Errors
 
-  There seems to be a consistent error with rake db:seed in the rake db:iom_reset process.  If that fails, run ```rake db:seed``` separately, and then run ```rake iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects```.
+There seems to be a consistent error with rake db:seed in the rake db:iom_reset process.  This is probably related to Ruby 1.8.7.  If that fails, run ```rake db:seed``` separately, and then run ```rake iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects```.
 
 
