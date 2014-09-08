@@ -1,10 +1,10 @@
-== Welcome to NGOAIDMAP
+# Welcome to NGOAIDMAP
 
 NGOAIDMAP is a website available at http://ngoaidmap.org/. It was a custom development done initially by Vizzuality (vizzuality.com) for Interaction (interaction.org). The application consist of a database of projects. Those projects get aggregated to create Sites, for example http://foodsecurity.ngoaidmap.org/ or http://haiti.ngoaidmap.org/
 
 It is probably a very specific application to be used directly, but the ideas and code behind it might be applicable for other people needs. If you have questions on how to use contact@vizzuality.com
 
-== Database structure 
+## Database structure 
 
 NGOAIDMAP is a project that allows you to create websites about projects around a certain topic. For example haiti or foodsecurity. 
 
@@ -12,7 +12,7 @@ The database consist of 4 main tables: "projects" done by "organizations" funded
 
 Take a look at the database schema at db/db_schema.pdf to get a better idea of what the project does.
 
-== Requirements
+## Requirements
 
 NGOAIDMAP is a Ruby on Rails application. The dependencies are:
 
@@ -21,7 +21,7 @@ NGOAIDMAP is a Ruby on Rails application. The dependencies are:
  * Postgis 2.X+
  * Bundler 
 
-== Installation
+## Installation
 
   git clone git://github.com/Nightsprout/iom.git
   cd iom
@@ -32,7 +32,7 @@ NGOAIDMAP is a Ruby on Rails application. The dependencies are:
   # edit config/app_config.yml if necessary
   rake db:iom_reset
 
-=== Install Errors
+### Install Errors
 
   There seems to be a consistent error with rake db:seed in the rake db:iom_reset process.  If that fails, run ```rake db:seed``` separately, and then run ```rake iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects```.
 
