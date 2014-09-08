@@ -20,6 +20,7 @@ NGOAIDMAP is a Ruby on Rails application. The dependencies are:
  * PostgreSQL 9.2 or higher.
  * Postgis 2.X+
  * Bundler 
+ * RVM
 
 ## Installation
 
