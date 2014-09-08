@@ -23,14 +23,14 @@ NGOAIDMAP is a Ruby on Rails application. The dependencies are:
 
 ## Installation
 
-  git clone git://github.com/Nightsprout/iom.git
-  cd iom
-  # follow any RVM prompts if any
-  bundle install
-  # edit config/database.yml
-  cp config/app_config.yml.sample config/app_config.yml
-  # edit config/app_config.yml if necessary
-  rake db:iom_reset
+ * git clone git://github.com/Nightsprout/iom.git
+ * cd iom
+ * # follow any RVM prompts if any
+ * bundle install
+ * # edit config/database.yml
+ * cp config/app_config.yml.sample config/app_config.yml
+ * # edit config/app_config.yml if necessary
+ * rake db:iom_reset
 
 ### Install Errors
 
