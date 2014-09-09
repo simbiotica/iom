@@ -46,7 +46,9 @@ group :test, :development do
   gem 'rr', :tag => 'v1.0.0'
   gem "rspec-rails"
   gem 'launchy'
-  gem 'capybara', '~> 0.4.0'
+  gem 'capybara', '~> 2.2.0'
   gem 'webrat'
   gem 'database_cleaner', :tag => 'v0.5.2'
+  gem 'selenium-webdriver'
+  gem 'steak'
 end
