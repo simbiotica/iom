@@ -10,7 +10,7 @@ gem 'nofxx-georuby',           :require => 'geo_ruby'
 gem 'puma'
 
 gem 'newrelic_rpm'
-gem "will_paginate", "3.0.pre2"
+gem 'will_paginate', '~> 3.0'
 gem 'sanitize', '2.0.3'
 gem 'paperclip', '~> 2.7'
 gem 'garb'
