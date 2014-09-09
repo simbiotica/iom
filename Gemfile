@@ -1,12 +1,12 @@
 source 'http://rubygems.org'
 ruby '1.9.3'
 
-gem 'rails', '3.0.20'
+gem 'rails', '~> 3.1'
 
 # PostgreSQL
 gem 'pg'
 gem 'nofxx-georuby',           :require => 'geo_ruby'
-gem 'spatial_adapter'
+# gem 'spatial_adapter'
 gem 'puma'
 
 gem 'newrelic_rpm'
@@ -22,7 +22,7 @@ gem 'geokit'
 gem 'memcachier'
 gem 'dalli'
 gem 'spreadsheet'
-gem 'roadie'
+# gem 'roadie'
 gem 'ruby-oembed'
 gem 'sass'
 gem 'compass'
@@ -37,7 +37,7 @@ group :development do
   gem 'capistrano-ext'
   gem 'wirble'
   gem 'railroady'
-  gem 'mail_view', :git => 'https://github.com/37signals/mail_view.git'
+#  gem 'mail_view', :git => 'https://github.com/37signals/mail_view.git'
 end
 
 group :test, :development do
