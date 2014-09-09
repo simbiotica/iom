@@ -116,7 +116,7 @@ Iom::Application.routes.draw do
     resources :layers
   end
 
-  if Rails.env.development?
-    mount AlertsMailer::Preview => 'mail_view'
-  end
+#  if Rails.env.development?
+#    mount AlertsMailer::Preview => 'mail_view'
+#  end
 end
