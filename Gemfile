@@ -7,6 +7,8 @@ gem 'rails', '~> 3.1'
 gem 'pg'
 gem 'nofxx-georuby',           :require => 'geo_ruby'
 # gem 'spatial_adapter'
+gem 'rgeo'
+gem 'activerecord-postgis-adapter'
 gem 'puma'
 
 gem 'newrelic_rpm'
