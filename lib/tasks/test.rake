@@ -9,7 +9,7 @@ namespace :db do
       Rake::Task['db:drop'].invoke
       Rake::Task['db:create'].invoke
       Rake::Task['iom:postgis_init'].invoke
-      Rake::Task['db:migrate'].invoke
+      Rake::Task['db:structure:load'].invoke
     end
 
   end
