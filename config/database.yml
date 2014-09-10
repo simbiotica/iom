@@ -1,17 +1,15 @@
 development:
   adapter: postgis
-  template: template_postgis
   host: localhost
   database: iom_development
-  username: 
+  username: dtp
   password: 
 
 test:
   adapter: postgis
-  template: template_postgis
   host: localhost
   database: iom_test
-  username: 
+  username: dtp
   password: 
 
 staging:

@@ -6,8 +6,6 @@ Bundler.require(:default, Rails.env) if defined?(Bundler)
 
 module Iom
   class Application < Rails::Application
-    config.active_record.schema_format = :sql
-
     config.action_view.javascript_expansions[:defaults] = %w()
 
     Paperclip::Railtie.insert
