@@ -4,7 +4,7 @@ require 'capybara/rails'
 require "capybara/dsl"
 require "selenium-webdriver"
 
-Capybara.default_driver    = :selenium
+Capybara.default_driver    = :rack_test
 Capybara.default_host      = 'example.com'
 Capybara.server_port       = 9887
 Capybara.app_host          = "http://#{Capybara.default_host}:#{Capybara.server_port}"
@@ -31,19 +31,19 @@ RSpec.configure do |config|
     #    stub(u).delete_attached_files {true}
     #  end
     any_instance_of(Paperclip::Attachment, :post_process => true)
-    Capybara.current_driver = :selenium if example.metadata[:js]
+    Capybara.current_driver = :selenium #if example.metadata[:js]
   end
 
   config.after(:each) do
     case page.driver.class
-    when Capybara::Driver::RackTest
+    when Capybara::RackTest::Driver
       page.driver.rack_mock_session.clear_cookies
 #    when Capybara::Driver::Culerity
 #      page.driver.browser.clear_cookies
-    when Capybara::Driver::Selenium
+    when Capybara::Selenium::Driver
       page.driver.cleanup!
     end
-    Capybara.use_default_driver if example.metadata[:js]
+    Capybara.use_default_driver #if example.metadata[:js]
   end
 
 end
