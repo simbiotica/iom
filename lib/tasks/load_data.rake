@@ -1,6 +1,6 @@
 namespace :db do
   desc 'Remove,Create,Seed and load data'
-  task :iom_reset => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
+  task :iom_reset => %w(db:drop db:create iom:postgis_init db:migrate iom:tiger_init iom:data:load_countries db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
 
   desc 'reset 1'
   task :reset_1 => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries)
@@ -65,6 +65,8 @@ namespace :iom do
       csv = CsvMapper.import("#{Rails.root}/db/data/gadm.csv") do
         read_attributes_from_file
       end
+
+      geographic_factory = RGeo::Geographic.spherical_factory()
       csv.each do |row|
         next if row.iso == 'HTI'
         unless country = Country.find_by_iso3_code(row.iso, :select => Country.custom_fields)
@@ -78,7 +80,7 @@ namespace :iom do
           r.country_id = country.id
           r.center_lat = row.lat
           r.center_lon = row.lon
-          r.the_geom = Point.from_x_y(row.lon,row.lat)
+          r.the_geom = geographic_factory.point(row.lon,row.lat)
           r.save!
           puts " [OK] created: #{r.name}"
         else
@@ -89,6 +91,7 @@ namespace :iom do
       DB.execute "UPDATE regions SET the_geom_geojson=ST_AsGeoJSON(the_geom,6) where level=1"
 
 
+      puts "--- loading gadm_level2.csv ---"
       csv = CsvMapper.import("#{Rails.root}/db/data/gadm_data/gadm_level2.csv") do
         read_attributes_from_file
       end
@@ -109,8 +112,8 @@ namespace :iom do
           else
             puts "already existing: 2 #{row.name}"
           end
-        rescue 
-          puts "Error"
+        rescue Exception => e
+          puts "Error loading gadm_level2.csv: #{e}"
         end
 
       end
@@ -135,8 +138,8 @@ namespace :iom do
           else
             puts "already existing: 3 #{row.name}"
           end
-        rescue
-          puts "Error"
+        rescue Exception => e
+          puts "Error loading gadm_level3.csv: #{e}"
         end
       end
     end
