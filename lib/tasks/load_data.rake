@@ -57,14 +57,14 @@ namespace :iom do
       # system("shp2pgsql -d -s 4326 -gthe_geom -i -WLATIN1 #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.shp public.tmp_countries > ")
 
 
-      open("#{Rails.root}/db/data/masteradminmap/new_master.sql", "wb") do |file|
+      open("#{Rails.root}/db/data/new_master.sql", "wb") do |file|
         open("https://s3.amazonaws.com/filehost/new_master.sql") do |uri|
            file.write(uri.read)
         end
       end
 
 
-      sql = File.read("#{Rails.root}/db/data/masteradminmap/new_master.sql")
+      sql = File.read("#{Rails.root}/db/data/new_master.sql")
       statements = sql.split(/;$/)
       statements.pop  # the last empty statement
 
@@ -120,13 +120,13 @@ namespace :iom do
     task :load_vitamin => :environment do    
 
 
-      open("#{Rails.root}/db/data/masteradminmap/VitaminAngelsMappingData.csv", "wb") do |file|
+      open("#{Rails.root}/db/data/VitaminAngelsMappingData.csv", "wb") do |file|
         open("https://s3.amazonaws.com/filehost/VitaminAngelsMappingData.csv") do |uri|
            file.write(uri.read)
         end
       end
 
-      csv_projs = CsvMapper.import("#{Rails.root}/db/data/masteradminmap/VitaminAngelsMappingData.csv") do
+      csv_projs = CsvMapper.import("#{Rails.root}/db/data/VitaminAngelsMappingData.csv") do
         read_attributes_from_file
       end
 
