@@ -1,6 +1,6 @@
 module WillPaginate
   class RandomCollection < Collection
-    attr_reader :current_page, :per_page, :total_entries, :total_pages, :start_in_page
+    attr_reader :current_page, :start_in_page
 
     def initialize(page, per_page, total, start_in_page)
       @start_in_page = start_in_page
