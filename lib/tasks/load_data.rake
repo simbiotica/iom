@@ -40,14 +40,11 @@ namespace :iom do
       statements.each do |statement|
         DB.execute(statement)
       end
-      
 
       #Insert the country and get the value
       DB.execute "INSERT INTO countries(\"name\",code,center_lat,center_lon,iso2_code,iso3_code, the_geom_geojson)
       SELECT name,iso3,st_y(ST_Centroid(the_geom)),st_x(ST_Centroid(the_geom)),iso2,iso3, ST_AsGeoJSON(the_geom,6) from tmp_countries
       where iso3 not in (select code from countries)"
-
-      DB.execute "UPDATE countries SET the_geom_geojson=ST_AsGeoJSON(the_geom,6)"
 
       DB.execute 'DROP TABLE tmp_countries'
     end
