@@ -16,7 +16,7 @@ namespace :iom do
 
   task :postgis_init => :environment do
     DB = ActiveRecord::Base.connection
-    DB.execute "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology; CREATE EXTENSION fuzzystrmatch;  CREATE EXTENSION postgis_tiger_geocoder;"
+    DB.execute "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology; CREATE EXTENSION fuzzystrmatch; "
   end
 
   namespace :data do
