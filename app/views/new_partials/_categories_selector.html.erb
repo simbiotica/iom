@@ -59,7 +59,7 @@
                 <div class="mod-go-up-menu menu">
                   <ul class="mod-categories-child countries-child">
                     <% @site.countries_select.each do |country| %>
-                      <li><%= link_to(country.name, location_path(:ids => country)) %></li>
+                      <li><%= link_to(country.name, location_path(:ids => country.id)) %></li>
                     <% end %>
                   </ul>
                   <input type="text" class="mod-categories-search" placeholder="Search Country">
