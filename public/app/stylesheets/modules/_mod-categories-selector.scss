@@ -185,7 +185,7 @@
 
 
   // Items
-  .sector {
+  .sector, .activities {
     @include categorie-selector($color-2, $color-2a);
     .mod-go-up-menu:after { @include gradient-up($color-0);
       bottom: 0;
@@ -213,7 +213,7 @@
       background-color: rgba($color-6, .3);
     }
   }
-  .donors {
+  .donors, .audience {
     @include categorie-selector($color-7, $color-7a);
     .mod-go-up-menu {
       &:after { @include gradient-up($color-0);}
