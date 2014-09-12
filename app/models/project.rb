@@ -130,11 +130,13 @@ class Project < ActiveRecord::Base
   end
 
   def points=(value)
+    geographic_factory = RGeo::Geographic.spherical_factory()
+
     points = value.map do |point|
       point = point.tr('(','').tr(')','').split(',')
-      Point.from_x_y(point[1].strip.to_f, point[0].strip.to_f)
+      geographic_factory.point(point[1].strip.to_f, point[0].strip.to_f)
     end
-    self.the_geom = MultiPoint.from_points(points)
+    self.the_geom = geographic_factory.multi_point(points)
   end
 
   def date_provided=(value)
@@ -491,7 +493,7 @@ SQL
   end
 
   def self.custom_find(site, options = {})
-    return [] if site.nil?
+    return [] if site.nil?    
     default_options = {
       :order => 'project_id DESC',
       :random => true,
@@ -563,7 +565,7 @@ SQL
       if options[:organization_filter]
         where << "site_id=#{site.id} and (end_date is null OR end_date > now()) and organization_id = #{options[:organization_filter]}"
       else
-        where <<" site_id=#{site.id} and (end_date is null OR end_date > now())"
+        where << "site_id=#{site.id} and (end_date is null OR end_date > now())"
       end
       if options[:category_id]
         where << "sector_ids && '{#{options[:category_id]}}'"
