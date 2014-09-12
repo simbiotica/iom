@@ -619,6 +619,22 @@ SQL
       ORDER BY d.name ASC"
   end
 
+  def audience_select
+    Audience.find_by_sql " SELECT distinct a.id as id , a.name as name
+      FROM projects_sites AS ps JOIN projects as p ON ps.project_id = p.id AND ps.site_id = #{self.id} AND p.end_date > NOW()
+      JOIN projects_audiences as pa ON pa.project_id = p.id
+      JOIN audiences as a on a.id = pa.audience_id
+      ORDER BY a.name ASC"
+  end
+
+  def activities_select
+    Activity.find_by_sql " SELECT distinct a.id as id , a.name as name
+      FROM projects_sites AS ps JOIN projects as p ON ps.project_id = p.id AND ps.site_id = #{self.id} AND p.end_date > NOW()
+      JOIN projects_activities as pa ON pa.project_id = p.id
+      JOIN activities as a on a.id = pa.activity_id
+      ORDER BY a.name ASC"
+  end
+
   def regions
     if geographic_context_country_id.blank? && geographic_context_region_id.blank?
       []

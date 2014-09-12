@@ -56,10 +56,11 @@ namespace :iom do
       # system("unzip -o #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.zip -d #{Rails.root}/db/data/countries/")
       # system("shp2pgsql -d -s 4326 -gthe_geom -i -WLATIN1 #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.shp public.tmp_countries > ")
 
-
-      open("#{Rails.root}/db/data/new_master.sql", "wb") do |file|
-        open("https://s3.amazonaws.com/filehost/new_master.sql") do |uri|
-           file.write(uri.read)
+      unless File.exists? "#{Rails.root}/db/data/new_master.sql"
+        open("#{Rails.root}/db/data/new_master.sql", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/new_master.sql") do |uri|
+             file.write(uri.read)
+          end
         end
       end
 
@@ -119,10 +120,11 @@ namespace :iom do
     desc "load all available regions not imported already"
     task :load_vitamin => :environment do    
 
-
-      open("#{Rails.root}/db/data/VitaminAngelsMappingData.csv", "wb") do |file|
-        open("https://s3.amazonaws.com/filehost/VitaminAngelsMappingData.csv") do |uri|
-           file.write(uri.read)
+      unless File.exists? "#{Rails.root}/db/data/VitaminAngelsMappingData.csv"
+        open("#{Rails.root}/db/data/VitaminAngelsMappingData.csv", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/VitaminAngelsMappingData.csv") do |uri|
+             file.write(uri.read)
+          end
         end
       end
 
@@ -143,12 +145,10 @@ namespace :iom do
             :intervention_id          => row.org_intervention_id,
             :name                     => row.project_name.present? ? row.project_name.gsub(/\|/, ", ") : nil,
             :description              => row.project_description,
-            :activities               => row.activities.present? ? row.activities.gsub(/\|/, ", ") : nil,
             :additional_information   => row.additional_information,
             :budget                   => row.budget_numeric,
             :partner_organizations    => row.local_partners,
-            :estimated_people_reached => row.estimated_people_reached,
-            :target                   => row.target_groups
+            :estimated_people_reached => row.estimated_people_reached
           })
 
           # verbatim locations
@@ -205,6 +205,26 @@ namespace :iom do
                 sect = Sector.create(:name => sec)
               end
               p.sectors << sect
+            end
+          end
+
+          unless row.target_groups.blank?
+            row.target_groups.split("|").map(&:strip).each do |aud|
+              a = Audience.find_by_name aud
+              if a.nil?
+                a = Audience.create(:name => aud)
+              end
+              p.audiences << a
+            end
+          end
+
+          unless row.activities.blank?
+            row.activities.split("|").map(&:strip).each do |aud|
+              a = Activity.find_by_name aud
+              if a.nil?
+                a = Activity.create(:name => aud)
+              end
+              p.activities << a
             end
           end
 

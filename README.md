@@ -32,6 +32,8 @@ NGOAIDMAP is a Ruby on Rails application. The dependencies are:
  * ```cp config/app_config.yml.sample config/app_config.yml```
  * edit config/app_config.yml if necessary
  * ```rake db:iom_reset```
+ * ```npm install```
+ * ```bower install```
 
 ### Install Errors
 
