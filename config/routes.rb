@@ -49,6 +49,9 @@ Iom::Application.routes.draw do
   match 'sectors/:id' => 'clusters_sectors#show', :as => 'sector'
   match 'clusters/:id'   => 'clusters_sectors#show', :as => 'cluster'
 
+  match 'activities/:id' => 'activities#show', :as => 'activity'
+  match 'audience/:id'   => 'audience#show', :as => 'audience'
+
   # pages
   match '/p/:id' => 'pages#show', :as => :page
   # search
