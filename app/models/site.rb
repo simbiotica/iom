@@ -531,7 +531,8 @@ class Site < ActiveRecord::Base
   def countries_select
     filter = if geographic_context_country_id? && geographic_context_region_id.blank?
                <<-SQL
-                 INNER JOIN countries_projects cp ON cp.project_id = projects.id AND cp.country_id = #{self.geographic_context_country_id} AND cp.country_id = c.id
+                 INNER JOIN countries_projects cp ON cp.country_id = #{self.geographic_context_country_id} AND cp.country_id = c.id
+                 INNER JOIN projects              ON cp.project_id=projects.id AND (projects.end_date IS NULL OR projects.end_date > now())
                SQL
              elsif geographic_context_region_id?
                <<-SQL

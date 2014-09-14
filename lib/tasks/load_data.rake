@@ -78,6 +78,8 @@ namespace :iom do
         country = Country.find_by_name row[16]
         if country.nil?
           DB.execute "INSERT INTO countries( name, code, center_lat, center_lon, iso3_code, the_geom, the_geom_geojson ) SELECT name0, iso, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), iso, the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
+          country = Country.find_by_name row[16]
+          country.save!
         end
       end
 
@@ -91,6 +93,8 @@ namespace :iom do
         region = country.regions.find_by_name row[17]        
         if region.nil?
           DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), first_hasc from tmp_countries where gid=#{row[0]}"
+          region = country.regions.find_by_name row[17]    
+          region.save!
         end
       end
 
@@ -109,6 +113,8 @@ namespace :iom do
         region = Region.where(:name => row[18], :parent_region_id => parent_region.id, :country_id => country.id).first 
         if region.nil?
           DB.execute "INSERT INTO regions(country_id, parent_region_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, #{parent_region.id}, 2, name2, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), first_hasc from tmp_countries where gid=#{row[0]}"
+          region = Region.where(:name => row[18], :parent_region_id => parent_region.id, :country_id => country.id).first 
+          region.save!
         end
       end
 

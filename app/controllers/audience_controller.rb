@@ -54,7 +54,6 @@ class AudienceController < ApplicationController
 
     respond_to do |format|
       format.html do
-
         
         carry_on_url = audience_path(@data, @carry_on_filters.merge(:location_id => ''))
         if @site.geographic_context_country_id

@@ -579,8 +579,11 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
 
     // If region exist, reject a country object
     _.each(map_data, function(d) {
-      if (d.type === 'region') {
+      if (d !== null && d.type === 'region') {
         map_data = _.reject(map_data, function(d) {
+          if( d === null ){
+            return true;
+          }
           return d.type === 'country';
         });
         return false;
