@@ -13,6 +13,7 @@ User.find_or_create_by_email(
 settings = Settings.find_or_create_by_id(1)
 data = HashWithIndifferentAccess.new
 data[:main_site_host] = 'iom.dev'
+data[:main_site_host] = 'task-force-prod.herokuapp.com' if Rails.env.production?
 settings.data = data
 settings.save!
 

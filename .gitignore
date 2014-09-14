@@ -3,6 +3,9 @@
 .ruby-version
 doc/
 db/*.sqlite3
+db/data/*.csv
+db/data/*sql
+db/data/masteradminmap/
 log/*.log
 tmp/**/*
 public/system
