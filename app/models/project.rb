@@ -51,7 +51,7 @@ class Project < ActiveRecord::Base
   has_many :media_resources, :conditions => proc {"media_resources.element_type = #{Iom::ActsAsResource::PROJECT_TYPE}"}, :foreign_key => :element_id, :dependent => :destroy, :order => 'position ASC'
   has_many :donations, :dependent => :destroy
   has_many :donors, :through => :donations
-  has_many :cached_sites, :class_name => 'Site', :finder_sql => 'select sites.* from sites, projects_sites where projects_sites.project_id = #{id} and projects_sites.site_id = sites.id'
+  has_many :cached_sites, :class_name => 'Site', :finder_sql => "select sites.* from sites, projects_sites where projects_sites.project_id = #{id} and projects_sites.site_id = sites.id"
 
   scope :active, where("end_date > ?", Date.today.to_s(:db))
   scope :closed, where("end_date < ?", Date.today.to_s(:db))
