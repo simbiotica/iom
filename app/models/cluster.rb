@@ -104,7 +104,7 @@ SQL
   end
 
   def projects_for_kml(site)
-    sql = "select  p.name, ST_AsKML(p.the_geom) as the_geom
+    sql = "select p.name, ST_AsKML(p.the_geom) as the_geom
     from clusters_projects as cp
     inner join projects as p on p.id=cp.project_id and (p.end_date is null OR p.end_date > now())
     inner join projects_sites as psi on p.id=psi.project_id and psi.site_id=#{site.id}
@@ -112,6 +112,14 @@ SQL
     ActiveRecord::Base.connection.execute(sql).first['count'].to_i
   end
 
+  def projects_for_geojson(site)
+    sql = "select p.name, ST_AsGeoJSON(p.the_geom) as the_geom
+    from clusters_projects as cp
+    inner join projects as p on p.id=cp.project_id and (p.end_date is null OR p.end_date > now())
+    inner join projects_sites as psi on p.id=psi.project_id and psi.site_id=#{site.id}
+    where cp.cluster_id=#{self.id}"
+    ActiveRecord::Base.connection.execute(sql).first['count'].to_i
+  end
 
   # to get only id and name
   def self.get_select_values

@@ -206,6 +206,16 @@ SQL
     ActiveRecord::Base.connection.execute(sql)
   end
 
+  def projects_for_geojson(site)
+    sql = "select p.name, ST_AsGeoJSON(p.the_geom) as the_geom
+    from projects_regions as pr
+    inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{site.id}
+    inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
+    where pr.region_id=#{self.id}"
+    ActiveRecord::Base.connection.execute(sql)
+  end
+
+
   def to_param
     self.path
   end

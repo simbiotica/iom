@@ -322,6 +322,14 @@ SQL
     ActiveRecord::Base.connection.execute(sql)
   end
 
+  def projects_for_geojson(site)
+    sql = "select p.name, ST_AsGeoJSON(p.the_geom) as the_geom
+    from projects as p
+    inner join projects_sites as ps on p.id=ps.project_id and ps.site_id=#{site.id}
+    where p.primary_organization_id=#{self.id} and (p.end_date is null OR p.end_date > now())"
+    ActiveRecord::Base.connection.execute(sql)
+  end
+
 
   def total_regions(site)
     sql = "select count(distinct(pr.region_id)) as count from projects_regions as pr
