@@ -228,6 +228,7 @@ class Project < ActiveRecord::Base
         country_id,
         region_id,
       SQL
+    end
     if options[:kml]
       kml_select = <<-SQL
         , CASE WHEN pr.region_id IS NOT NULL THEN
