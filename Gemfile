@@ -11,6 +11,8 @@ gem 'rgeo-geojson'
 gem 'activerecord-postgis-adapter'
 gem 'puma'
 
+gem 'annotate'
+
 gem 'newrelic_rpm'
 gem 'will_paginate', '~> 3.0'
 gem 'sanitize', '~> 3.0.2'
