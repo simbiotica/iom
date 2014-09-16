@@ -215,11 +215,11 @@ class Project < ActiveRecord::Base
       geojson_select = <<-SQL
         , CASE WHEN pr.region_id IS NOT NULL THEN
         (select
-        '{\"type\":\"MultiPoint\",\"coordinates\":[['|| array_to_string(array_agg(distinct center_lon ||','|| center_lat),'], [') || ']}' as lat
+        '{"type":"MultiPoint","coordinates":[['|| array_to_string(array_agg(distinct center_lon ||','|| center_lat),'], [') || ']}' as lat
         from regions as r INNER JOIN projects_regions AS pr ON r.id=pr.region_id WHERE pr.project_id=p.id)
         ELSE
         (select
-        '{\"type\":\"MultiPoint\",\"coordinates\":[['|| array_to_string(array_agg(distinct center_lon ||','|| center_lat),'], [') || ']}' as lat
+        '{"type":"MultiPoint","coordinates":[['|| array_to_string(array_agg(distinct center_lon ||','|| center_lat),'], [') || ']}' as lat
         from countries as c INNER JOIN countries_projects AS cp ON c.id=cp.country_id where cp.project_id=p.id)
         END
         as geojson
