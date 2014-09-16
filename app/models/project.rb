@@ -291,6 +291,10 @@ class Project < ActiveRecord::Base
       where << "ps2.sector_id = #{options[:sector]} and site_id=#{site.id}"
       where << "pr.region_id = #{options[:sector_region_id]}" if options[:sector_region_id]
       where << "cp.country_id = #{options[:sector_country_id]}" if options[:sector_country_id]
+    elsif options[:audience]
+      where << "pa2.audience_id = #{options[:audience]} and site_id=#{site.id}"
+    elsif options[:activity]
+      where << "pa.activity_id = #{options[:activity]} and site_id=#{site.id}"
     elsif options[:organization]
       where << "p.primary_organization_id = #{options[:organization]}"
       where << "site_id = #{site.id}" if site
@@ -394,6 +398,8 @@ class Project < ActiveRecord::Base
         LEFT OUTER JOIN projects_regions pr    ON  pr.project_id = p.id
         LEFT OUTER JOIN projects_sectors ps2   ON  ps2.project_id = p.id
         LEFT OUTER JOIN clusters_projects clpr ON  clpr.project_id = p.id
+        LEFT OUTER JOIN projects_activities pa ON  pa.project_id = p.id
+        LEFT OUTER JOIN projects_audience pa2  ON  pa2.project_id = p.id
         #{donor_report}
         #{where}
         GROUP BY

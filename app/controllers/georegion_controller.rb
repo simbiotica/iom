@@ -70,7 +70,7 @@ class GeoregionController < ApplicationController
                   UNION
                   select c.id,count(cp.project_id) as count,c.name,c.center_lon as lon, c.center_lat as lat,c.name,
                   CASE WHEN count(ps.project_id) > 1 THEN
-                  '/location/'||c.id
+                  '/countries/'||c.id
                   ELSE
                   '/projects/'||(array_to_string(array_agg(ps.project_id),''))
                   END as url,
@@ -94,7 +94,7 @@ class GeoregionController < ApplicationController
     else
       level = 1
       geo_ids[1..-1].each do |geo_id|
-        region = Region.find(geo_id, :select => Region.custom_fields, :conditions => {:level => level, :country_id => country.id})
+        region = Region.find geo_id
         raise NotFound unless region
         @breadcrumb << region unless !@site.send("navigate_by_level#{level}?".to_sym)
         @area = region
@@ -164,6 +164,7 @@ class GeoregionController < ApplicationController
         result = ActiveRecord::Base.connection.execute(sql)
         if @area.is_a?(Country) && @site.navigate_by_regions?
           @map_data = result.map do |r|
+
             uri = URI.parse(r['url'])
             params = Hash[uri.query.split('&').map{|p| p.split('=')}] rescue {}
             params['force_site_id'] = @site.id unless @site.published?

@@ -5,6 +5,8 @@ class Activity < ActiveRecord::Base
     columns.map{ |c| c.name }
   end
 
+  def css_class; ''; end
+
   # Array of arrays
   # [[region, count], [region, count]]
   def projects_regions(site)

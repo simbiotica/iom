@@ -38,17 +38,15 @@ class SitesController < ApplicationController
           if @site.geographic_context_country_id
             sql="select r.id,count(ps.project_id) as count,r.name,r.center_lon as lon,
                       r.center_lat as lat,r.name,
-
                       CASE WHEN count(distinct ps.project_id) > 1 THEN
-                          '/location/'||r.path
+                        '/location/'||r.path
                       ELSE
-                          '/projects/'||(array_to_string(array_agg(ps.project_id),''))
+                        '/projects/'||(array_to_string(array_agg(ps.project_id),''))
                       END as url,
-
                       r.code
-                      from ((projects_regions as pr inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{@site.id})
-                      inner join projects as p on pr.project_id=p.id and (p.end_date is null OR p.end_date > now())
-                      inner join regions as r on pr.region_id=r.id and r.level=#{@site.level_for_region})
+                      from projects_regions as pr 
+                      inner join projects_sites as ps on pr.project_id=ps.project_id
+                      inner join regions as r on pr.region_id=r.id and r.level=#{@site.level_for_region}
                       group by r.id,r.name,lon,lat,r.name,r.path,r.code"
           else
             sql="select c.id,count(ps.project_id) as count,c.name,c.center_lon as lon,

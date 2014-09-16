@@ -34,7 +34,7 @@
                 <div class="mod-go-up-menu menu">
                   <ul class="mod-categories-child organizations-child">
                     <% @site.audience_select.each do |audience| %>
-                      <li><a href="#"><%= audience.name %></a></li>
+                      <li><a href="<%= audience_path(audience) %>"><%= audience.name %></a></li>
                     <% end %>
                   </ul>
                   <input type="text" class="mod-categories-search" placeholder="Search Audience">
@@ -46,7 +46,7 @@
                 <div class="mod-go-up-menu menu">
                   <ul class="mod-categories-child organizations-child">
                     <% @site.activities_select.each do |activity| %>
-                      <li><a href="#"><%= activity.name %></a></li>
+                      <li><a href="<%= activity_path(activity) %>"><%= activity.name %></a></li>
                     <% end %>
                   </ul>
                   <input type="text" class="mod-categories-search" placeholder="Search Activities">

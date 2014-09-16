@@ -26,10 +26,10 @@
       var map_center = [];
       <% end %>
       var map_zoom = <%= @site.overview_map_zoom || "null" %> || 5;
-      var chco = "<%=@overview_map_chco%>";
-      var chf = "<%=@overview_map_chf%>";
-      var chld = "<%=@chld%>";
-      var chd = "<%=@chd%>";
+      var chco = "<%= @overview_map_chco %>";
+      var chf  = "<%= @overview_map_chf %>";
+      var chld = "<%= @chld %>";
+      var chd  = "<%= @chd %>";
       var marker_source = "<%=@georegion_map_marker_source%>";
       var map_data = <%=raw(@map_data)%>;
       var max_count = <%=@map_data_max_count? @map_data_max_count : 1 %>;
@@ -38,9 +38,10 @@
       var stylez = <%=raw @site.map_styles  %>
       var empty_layer = false;
       var kind = window.location.pathname.split('/')[1];
-      var globalPage = <%= @site.featured?? true : false %>;
+      var globalPage = <%= @site.featured? %>;
       var page = "<%= params[:controller] %>";
     </script>
+
     <%= javascript_include_tag "../lib/modernizr/modernizr.custom.js" %>
 
     <%= csrf_meta_tag %>

@@ -191,11 +191,15 @@
             </div>
           <% end %>
 
-          <% if @project.activities || @project.additional_information || @project.cross_cutting_issues || (@locations.present? && @locations.to_a.join.present?)%>
+          <% if @project.activities.present? || @project.additional_information || @project.cross_cutting_issues || (@locations.present? && @locations.to_a.join.present?)%>
             <section>
-              <%unless @project.activities.blank? %>
+              <%unless @project.activities.empty? %>
                 <h2>Activities</h2>
-                <p> <%= raw(@project.activities) %> </p>
+                <ul>
+                  <% @project.activities.each do |activity| %>
+                    <li><%=activity.name %> </li>
+                  <% end %>
+                </ul>
               <%end%>
               <%unless @project.additional_information.blank? %>
                 <h3 class="<%= (@project.activities.blank?)? 'first':''%>">Additional information</h3>

@@ -268,6 +268,10 @@ HTML
       if @data
         if @data.is_a?(Cluster)
           cluster_path(pagination_params)
+        elsif @data.is_a?(Activity)
+          activity_path(pagination_params)
+        elsif @data.is_a?(Audience)
+          audience_path(pagination_params)
         else
           sector_path(pagination_params)
         end
