@@ -6,9 +6,8 @@ class GeoregionController < ApplicationController
   skip_before_filter :set_site, :only => [:list_regions1_from_country,:list_regions2_from_country,:list_regions3_from_country]
 
   def show
-    raise NotFound if params[:ids].blank?
-
     ids = params[:ids]
+    ids ||= params[:id]
     raise NotFound unless ids =~ /([\d|\/]+)/
     raise NotFound unless $1.size == ids.size
 

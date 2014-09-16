@@ -38,16 +38,14 @@ Iom::Application.routes.draw do
   get '/sites/download/(:id).kml', :to => 'sites#downloads', :format => :kml
 
   match 'regions/:id' => 'georegion#old_regions'
-  # HACK!! route globbing doesn't work well when trying to get the request format in Rails <=3.0.7
-  match 'location/*ids.csv' => 'georegion#show', :as => 'location', :format => 'csv'
-  match 'location/*ids.xls' => 'georegion#show', :as => 'location', :format => 'xls'
-  match 'location/*ids.kml' => 'georegion#show', :as => 'location', :format => 'kml'
-  # End HACK!!
-  match 'location/*ids' => 'georegion#show', :as => 'location'
+  
+  resources :location, :controller => 'georegion' do
+    get ':id', :to => 'georegion#show'
+  end
 
   # clusters and sector work through the same controller and view
   match 'sectors/:id' => 'clusters_sectors#show', :as => 'sector'
-  match 'clusters/:id'   => 'clusters_sectors#show', :as => 'cluster'
+  match 'clusters/:id' => 'clusters_sectors#show', :as => 'cluster'
 
   # pages
   match '/p/:id' => 'pages#show', :as => :page
