@@ -168,7 +168,7 @@ HTML
     lis << content_tag(:li, "Others - #{values.last}", :class => 'pos3') if projects.count > 3
     chart = "<img src='http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00' class='pie_chart' />"
 
-    ul = [lis, chart].flatten.inject("") do |content, element| 
+    ul = [lis, chart].flatten.inject('') do |content, element| 
       content << raw(element)
     end
 
@@ -187,10 +187,14 @@ HTML
       lis << "<li class =pos#{index}> <a href=/organizations/#{o[:id]} >#{o[:name]}</a> - #{o[:count]}</li>"
     end
     lis << content_tag(:li, "Others - #{values.last}", :class => 'pos3') if organizations.count > 3
-    ul    = content_tag :ul, raw(lis), :class => 'chart'
     url = "http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00"
     chart = "<img src='http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00' class='pie_chart' />"
-    [ul, chart]
+
+    ul = [lis, chart].flatten.inject('') do |content, element|
+      content << raw(element)
+    end
+
+    content_tag :ul, raw(ul), :class => 'chart'
   end
 
   # def donors_projects_by_organization(collection = nil)
