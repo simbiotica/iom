@@ -189,6 +189,10 @@ class Project < ActiveRecord::Base
     the_geom.as_kml if the_geom.present?
   end
 
+  def to_geojson
+    RGeo::GeoJSON.encode(the_geom) if the_geom.present?
+  end
+
   def self.export_headers(options = {})
     options = {:show_private_fields => false}.merge(options || {})
 
@@ -449,6 +453,10 @@ class Project < ActiveRecord::Base
 
   def self.to_kml(site, options = {})
     projects = self.list_for_export(site, options.merge(:kml => true))
+  end
+
+  def self.to_geojson
+    projects = self.list_for_export(site, options.merge(:geojson => true))
   end
 
   def related(site, limit = 2)

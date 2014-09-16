@@ -8,6 +8,7 @@ gem 'pg'
 gem 'nofxx-georuby',           :require => 'geo_ruby'
 # gem 'spatial_adapter'
 gem 'rgeo'
+gem 'rgeo-geojson'
 gem 'activerecord-postgis-adapter'
 gem 'puma'
 

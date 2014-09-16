@@ -161,7 +161,7 @@ HTML
           when 'donors'
             raw("#{link_to geo.name, donor_path(@donor, @carry_on_filters.merge(:location_id => geo.to_param))} - #{count}")
         else
-          raw("#{link_to geo.name, location_path(geo, @carry_on_filters)} - #{count}")
+          raw("#{link_to geo.name, location_path(geo.id, @carry_on_filters)} - #{count}")
         end
       end)
     end
