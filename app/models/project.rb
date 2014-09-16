@@ -425,7 +425,7 @@ class Project < ActiveRecord::Base
         verbatim_location,
         idprefugee_camp,
         status,
-        #{kml_group_by}
+        #{serialization_group_by}
         sectors,
         clusters
         ORDER BY interaction_intervention_id
