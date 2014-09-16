@@ -102,7 +102,7 @@ module ProjectsHelper
       countries     = project['countries'].split('|').reject{|r| r.blank?}
       countries_ids = project['countries_ids'].delete('{}').split(',')
       if countries.size == 1
-        "in #{link_to(countries.first, location_path(:ids => [countries_ids.first]), :title => countries.first)}"
+        "in #{link_to(countries.first, location_path(:id => [countries_ids.first]), :title => countries.first)}"
       else
         "in #{pluralize(countries.size, 'country', 'countries')}"
       end
