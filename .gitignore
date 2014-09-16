@@ -3,6 +3,7 @@
 .ruby-version
 doc/
 db/*.sqlite3
+db/data/new_master.sql
 log/*.log
 tmp/**/*
 public/system
