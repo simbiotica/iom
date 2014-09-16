@@ -75,6 +75,9 @@ class ProjectsController < ApplicationController
         @chd = ""
       end
       format.kml
+      format.json do
+        @projects_for_geojson = Project.to_geoson(@site, :project => @project.id)
+      end
       format.csv do
         send_data Project.to_csv(@site, :project => @project.id),
           :type => 'application/download; application/vnd.ms-excel; text/csv; charset=iso-8859-1; header=present',

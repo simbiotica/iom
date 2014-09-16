@@ -128,6 +128,11 @@ class SitesController < ApplicationController
         # :type        => 'application/vnd.google-earth.kml+xml, application/vnd.google-earth.kmz',
           :disposition => "attachment; filename=#{@site.id}_projects.kml"
       end
+      format.json do
+        send_data Project.to_geojson(@site, {}),
+        :type        => "application/vnd.geo+json",
+        :disposition => "attachment; filename=#{@site.id}_projects.json"
+      end
       format.xml do
         @rss_items = Project.custom_find @site, :start_in_page => 0, :random => false, :per_page => 1000
 

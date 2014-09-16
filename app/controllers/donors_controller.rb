@@ -356,6 +356,9 @@ class DonorsController < ApplicationController
       format.kml do
         @projects_for_kml = Project.to_kml(@site, options_export)
       end
+      format.json do
+        @projects_for_geojson = Project.to_geoson(@site, options_export)
+      end
     end
   end
 

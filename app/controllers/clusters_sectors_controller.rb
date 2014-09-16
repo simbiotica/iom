@@ -251,6 +251,9 @@ class ClustersSectorsController < ApplicationController
       format.kml do
         @projects_for_kml = Project.to_kml(@site, projects_custom_find_options)
       end
+      format.json do
+        @projects_for_geojson = Project.to_geoson(@site, projects_custom_find_options)
+      end
     end
   end
 
