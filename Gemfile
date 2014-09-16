@@ -35,12 +35,12 @@ gem 'compass'
 #gem 'rd_searchlogic', :require => 'searchlogic', :git => 'git://github.com/railsdog/searchlogic.git'
 
 group :development do
-#  gem 'git-up'
-#  gem 'capistrano'
-#  gem 'rvm-capistrano'
-#  gem 'capistrano-ext'
-#  gem 'wirble'
-#  gem 'railroady'
+  gem 'git-up'
+  gem 'capistrano'
+  gem 'rvm-capistrano'
+  gem 'capistrano-ext'
+  gem 'wirble'
+  gem 'railroady'
 #  gem 'mail_view', :git => 'https://github.com/37signals/mail_view.git'
 end
 
