@@ -82,7 +82,7 @@ module Iom
     def create_organization(attributes_or_fixture = {})
       o = new_organization(attributes_or_fixture)
       o.save
-      o.reload
+#      o.reload
     end
 
   end
