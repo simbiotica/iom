@@ -158,6 +158,15 @@ class SiteTest < ActiveSupport::TestCase
   end
 
   test "Given a site contextualized in a country and some projects in some regions the projects in the site should those in the same level of the site" do
+
+    # the description of this test is vague and appears to refer to functionality that is
+    # completely unimplemented, so I'm skipping it for now
+    #
+    # we need to figure out exactly how this behavior should work; e.g., what should happen if a project
+    # covers multiple regions with different levels?
+    pending
+    # - dtp 9/18/14
+
     spain    = create_country :name => 'Spain'
     valencia  = create_region :name => 'Valencia',  :country => spain, :level => 1
     catalonia = create_region :name => 'Catalonia', :country => spain, :level => 1
@@ -190,7 +199,6 @@ class SiteTest < ActiveSupport::TestCase
 
     assert_equal 1, site.cached_projects.size
     assert site.cached_projects.include?(p1)
-
   end
 
   test "Destroy a project should remove it from projects_sites" do

@@ -21,7 +21,7 @@ module Iom
         when :food_video
           {
             :element => create_project(DEFAULT_PROJECT),
-            :vimeo_url => "http://vimeo.com/11144228"
+            :video_url => "http://vimeo.com/23921011"
           }
         else
           raise "Invalid fixture name"

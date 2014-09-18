@@ -25,7 +25,10 @@ class CountryTest < ActiveSupport::TestCase
     wikipedia_url = 'http://en.wikipedia.org/wiki/Dominican_republic'
     dominican_republic = Country.create(:name => 'Dominican Republic', :wiki_url => wikipedia_url)
     assert dominican_republic.wiki_description.present?
-    assert_match 'The Dominican Republic (i/dəˌmɪnɪkən rɪˈpʌblɪk/; Spanish: República Dominicana,', dominican_republic.wiki_description
+
+    expected_description = "The Dominican Republic (i/dəˌmɪnɨkən rɨˈpʌblɪk/; Spanish: República Dominicana [reˈpuβlika ðominiˈkana]) is a nation on the island of Hispaniola, part of the Greater Antilles archipelago in the Caribbean region. The western three-eighths of the island is occupied by the nation of Haiti, making Hispaniola one of two Caribbean islands, along with Saint Martin, that are shared by two countries. Both by area and population, the Dominican Republic is the second largest Caribbean nation (after Cuba), with 48,445 square kilometres (18,705 sq mi) and an estimated 10 million people, one million of which live in the capital city, Santo Domingo."
+
+    assert_match expected_description, dominican_republic.wiki_description
   end
 
   # should list the clusters of the projects in one site that belongs to a given country
@@ -145,7 +148,7 @@ class CountryTest < ActiveSupport::TestCase
     lerida   = create_region :name => 'Lerida', :country => spain,   :level => 2
 
     berlin   = create_region :name => 'Berlin', :country => germany, :level => 1
-    dresden  = create_region :name => 'Berlin', :country => germany, :level => 2
+    dresden  = create_region :name => 'Dresden', :country => germany, :level => 2
 
     organization1 = create_organization
     organization2 = create_organization

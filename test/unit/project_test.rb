@@ -205,10 +205,18 @@ class ProjectTest < ActiveSupport::TestCase
   # end
 
   test "project points" do
+
+    # this test appears to be outdated; project geometry is now being set to the union of the 
+    # geometry of its member regions in the set_cached_sites callback
+    pending
+    # - dtp 9/18/14
+
     project = create_project
     project.points = ["(37.5858156943109, -103.359375)", "(-4.38217261016909, -68.90625)", "(34.16850371683051, 11.953125)", "(-10.652667327870493, 23.90625)"]
+    
     project.save
     project.reload
+
     assert_not_nil project.the_geom
     assert_equal 4, project.the_geom.points.size
     assert_equal 37.5858156943109, project.the_geom.points[0].y

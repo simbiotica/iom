@@ -51,7 +51,7 @@ class Project < ActiveRecord::Base
   has_many :media_resources, :conditions => proc {"media_resources.element_type = #{Iom::ActsAsResource::PROJECT_TYPE}"}, :foreign_key => :element_id, :dependent => :destroy, :order => 'position ASC'
   has_many :donations, :dependent => :destroy
   has_many :donors, :through => :donations
-  has_many :cached_sites, :class_name => 'Site', :finder_sql => proc { "select sites.* from sites, projects_sites where projects_sites.project_id = #{id} and projects_sites.site_id = sites.id" }
+  has_many :cached_sites, :class_name => 'Site', :finder_sql => proc { "select * from sites, projects_sites where projects_sites.project_id = #{id} and projects_sites.site_id = sites.id" }
 
   scope :active, where("end_date > ?", Date.today.to_s(:db))
   scope :closed, where("end_date < ?", Date.today.to_s(:db))
@@ -65,7 +65,6 @@ class Project < ActiveRecord::Base
   validate :sync_mode_validations,                                   :if     => lambda { sync_mode }
   validates_presence_of :name, :description, :start_date, :end_date, :unless => lambda { sync_mode }
   validates_presence_of :primary_organization_id,                    :unless => lambda { sync_mode }
-  validates_presence_of :sectors
   validate :location_presence,                                       :unless => lambda { sync_mode }
   validate :dates_consistency#, :presence_of_clusters_and_sectors
   validates_format_of :website, :with => /^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/ix, :message => "URL is invalid (your changes were not saved). Make sure the web address begins with 'http://' or 'https://'.", :allow_blank => true, :if => :website_changed?
@@ -76,7 +75,7 @@ class Project < ActiveRecord::Base
   #end)
 
   after_create :generate_intervention_id
-  after_commit :set_cached_sites
+  after_save :set_cached_sites
   after_destroy :remove_cached_sites
   before_validation :strip_urls
 
@@ -138,6 +137,7 @@ class Project < ActiveRecord::Base
       point = point.tr('(','').tr(')','').split(',')
       geographic_factory.point(point[1].strip.to_f, point[0].strip.to_f)
     end
+
     self.the_geom = geographic_factory.multi_point(points)
   end
 
@@ -730,7 +730,6 @@ SQL
   end
 
   def set_cached_sites
-
     #We also update its geometry
     sql = <<-SQL
       UPDATE projects p SET the_geom = geoms.the_geom
@@ -1194,7 +1193,9 @@ SQL
   end
 
   def remove_from_country(region)
-    ActiveRecord::Base.connection.execute("DELETE from countries_projects where project_id=#{self.id} AND country_id=#{region.country_id}")
+    if region.country_id
+      ActiveRecord::Base.connection.execute("DELETE from countries_projects where project_id=#{self.id} AND country_id=#{region.country_id}")
+    end
   end
 
   def presence_of_clusters_and_sectors

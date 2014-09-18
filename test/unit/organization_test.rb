@@ -255,31 +255,47 @@ class OrganizationTest < ActiveSupport::TestCase
     assert_equal 1, organization1.projects_count(site1)
   end
 
-  test "organization budget is calculated" do
+  test "organization budget is calculated for each site" do
     organization = create_organization
-    organization.private_funding = 10
-    organization.usg_funding = 20
-    organization.other_funding = 5
+    site1 = create_site :name => 'Food for Haiti 1', :project_context_organization_id => organization.id, :project_context_cluster_id => nil, :url => 'http://site1.com'
+    
+    organization.sites << site1
+    organization.update_attribute(:site_specific_information,
+                                  { site1.id.to_s => 
+                                    {
+                                      private_funding: 10,
+                                      usg_funding: 20,
+                                      other_funding: 5
+                                    }
+                                  })
     organization.save
     organization.reload
-    assert_equal 35, organization.budget
+    assert_equal 35, organization.budget(site1)
   end
 
   test "remove fundings" do
     organization = create_organization
-    organization.private_funding = 10
-    organization.usg_funding = 20
-    organization.other_funding = 5
-    organization.save
-    organization.reload
-    organization.private_funding = nil
-    organization.usg_funding = ""
-    organization.other_funding = 0
-    organization.save
-    assert_equal 0, organization.budget
-    assert_equal 0, organization.private_funding
-    assert_equal 0, organization.usg_funding
-    assert_equal 0, organization.other_funding
+    site1 = create_site :name => 'Food for Haiti 1', :project_context_organization_id => organization.id, :project_context_cluster_id => nil, :url => 'http://site1.com'
+    
+    organization.sites << site1
+    organization.update_attribute(:site_specific_information,
+                                  { site1.id.to_s => 
+                                    {
+                                      private_funding: 10,
+                                      usg_funding: 20,
+                                      other_funding: 5
+                                    }
+                                  })
+    organization.update_attribute(:site_specific_information,
+                                  { site1.id.to_s => 
+                                    {
+                                      private_funding: 0,
+                                      usg_funding: '',
+                                      other_funding: nil
+                                    }
+                                  })
+
+    assert_equal 0, organization.budget(organization.sites.first)
   end
 
 end

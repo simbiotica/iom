@@ -54,8 +54,8 @@ class Site < ActiveRecord::Base
 
   @@main_domain = 'ngoaidmap.org'
 
-  has_many :resources, :conditions => 'resources.element_type = #{Iom::ActsAsResource::SITE_TYPE}', :foreign_key => :element_id, :dependent => :destroy
-  has_many :media_resources, :conditions => 'media_resources.element_type = #{Iom::ActsAsResource::SITE_TYPE}', :foreign_key => :element_id, :dependent => :destroy, :order => 'position ASC'
+  has_many :resources, :conditions => "resources.element_type = #{Iom::ActsAsResource::SITE_TYPE}", :foreign_key => :element_id, :dependent => :destroy
+  has_many :media_resources, :conditions => "media_resources.element_type = #{Iom::ActsAsResource::SITE_TYPE}", :foreign_key => :element_id, :dependent => :destroy, :order => 'position ASC'
   belongs_to  :theme
   belongs_to  :geographic_context_country, :class_name => 'Country'
   belongs_to :geographic_context_region, :class_name => 'Region'

@@ -17,11 +17,11 @@ module Iom
           {
             :name => "Intermon Oxfam",
             :description => "Oxfam America is an international relief and development organization that creates lasting solutions to poverty, hunger, and injustice. Together with individuals and local groups in more than 90 countries, Oxfam saves lives, helps people overcome poverty, and fights for social justice. We are one of the 14 affiliates in the international confederation, Oxfam.",
-            :budget => 250000000,
+            #:budget => 250000000,
             :website => "http://www.oxfamamerica.org",
             :national_staff => 1432,
-            :twitter => "oxfamamerica",
-            :facebook => "www.facebook.com/oxfamamerica",
+            :twitter => "http://twitter.com/oxfamamerica",
+            :facebook => "http://www.facebook.com/oxfamamerica",
             :hq_address => "Oxfam St, 32, City Center",
             :contact_email => "contact_intermon_oxfam@example.com",
             :contact_phone_number => "+31 2321 2133",
@@ -45,11 +45,11 @@ module Iom
           {
             :name => "Caritas org",
             :description => "Description for caritas",
-            :budget => 10000,
+#            :budget => 10000,
             :website => "http://www.caritas.es/",
             :national_staff => 500,
-            :twitter => "caritas",
-            :facebook => "www.facebook.com/caritas",
+            :twitter => "http://twitter.com/caritas",
+            :facebook => "http://www.facebook.com/caritas",
             :hq_address => "Caritas St, 32, City Center",
             :contact_email => "contact_caritas@example.com",
             :contact_phone_number => "+31 123 2133",
@@ -81,8 +81,9 @@ module Iom
 
     def create_organization(attributes_or_fixture = {})
       o = new_organization(attributes_or_fixture)
+      o.update_attributes(attributes_or_fixture)
       o.save
-#      o.reload
+      o.reload
     end
 
   end
