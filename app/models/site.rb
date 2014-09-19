@@ -514,7 +514,7 @@ class Site < ActiveRecord::Base
     geographic_factory = RGeo::Geographic.spherical_factory()
 
     coords.each {|c| polygon_points << geographic_factory.point(c.last.to_f, c.first.to_f)}
-    self.geographic_context_geometry = geographic_factory.polygon([polygon_points])
+    self.geographic_context_geometry = geographic_factory.polygon(geographic_factory.linear_ring(polygon_points))
   end
 
   def subdomain=(subdomain)
