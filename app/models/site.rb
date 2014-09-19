@@ -511,9 +511,10 @@ class Site < ActiveRecord::Base
     coords         = geometry.split(',').map{|c| c.split(' ')}
     polygon_points = []
 
-    coords.each {|c| polygon_points << Point.from_x_y(c.last.to_f, c.first.to_f)}
+    geographic_factory = RGeo::Geographic.spherical_factory()
 
-    self.geographic_context_geometry = Polygon.from_points([polygon_points])
+    coords.each {|c| polygon_points << geographic_factory.point(c.last.to_f, c.first.to_f)}
+    self.geographic_context_geometry = geographic_factory.polygon([polygon_points])
   end
 
   def subdomain=(subdomain)
