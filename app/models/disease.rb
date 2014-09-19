@@ -9,7 +9,7 @@ class Disease < ActiveRecord::Base
 
   # Array of arrays
   # [[region, count], [region, count]]
-  def diseases_projects(site)
+  def projects_regions(site)
     Region.find_by_sql(<<-SQL
       select r.id,r.name,r.level, r.parent_region_id, r.path, r.country_id,count(ps.*) as count from regions as r
         inner join projects_regions as pr on r.id=pr.region_id and r.level=#{site.level_for_region}

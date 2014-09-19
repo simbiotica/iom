@@ -238,134 +238,138 @@ namespace :iom do
 
     def load_project_files( csv_projs )
       csv_projs.each do |row|
-        o = Organization.find_by_name row.organization
-        if o.nil?
-          o = Organization.create!( :name => row.organization )
-        end
-
-        p = o.projects.find_by_name row.project_name
-        if p.nil?
-          p = Project.create({
-            :primary_organization_id  => o.id,
-            :intervention_id          => row.org_intervention_id,
-            :name                     => row.project_name.present? ? row.project_name.gsub(/\|/, ", ") : nil,
-            :description              => row.project_description,
-            :additional_information   => row.additional_information,
-            :budget                   => row.budget_numeric,
-            :partner_organizations    => row.local_partners,
-            :estimated_people_reached => row.estimated_people_reached
-          })
-
-          # verbatim locations
-
-          if row.start_date.blank?
-            p.start_date = Time.now - 1.year
-          else
-            begin
-              p.start_date = Date.strptime( row.start_date, '%m/%d/%Y' )
-            rescue
-              p.start_date = nil
-            end
+        begin
+          o = Organization.find_by_name row.organization
+          if o.nil?
+            o = Organization.create!( :name => row.organization )
           end
 
-          if row.end_date.blank?
-            p.end_date = Time.now + 1.year
-          else
-            begin
-              p.end_date = Date.strptime( row.end_date, '%m/%d/%Y' )
-            rescue
-              p.end_date = nil
+          p = o.projects.find_by_name row.project_name
+          if p.nil?
+            p = Project.create({
+              :primary_organization_id  => o.id,
+              :intervention_id          => row.org_intervention_id,
+              :name                     => row.project_name.present? ? row.project_name.gsub(/\|/, ", ") : nil,
+              :description              => row.project_description,
+              :additional_information   => row.additional_information,
+              :budget                   => row.budget_numeric,
+              :partner_organizations    => row.local_partners,
+              :estimated_people_reached => row.estimated_people_reached
+            })
+
+            # verbatim locations
+
+            if row.start_date.blank?
+              p.start_date = Time.now - 1.year
+            else
+              begin
+                p.start_date = Date.strptime( row.start_date, '%m/%d/%Y' )
+              rescue
+                p.start_date = nil
+              end
             end
-          end
 
-          unless row.location.blank?
-            row.location.split("|").map(&:strip).each do |loc|
-              loc_array = loc.split(">").map(&:strip)
+            if row.end_date.blank?
+              p.end_date = Time.now + 1.year
+            else
+              begin
+                p.end_date = Date.strptime( row.end_date, '%m/%d/%Y' )
+              rescue
+                p.end_date = nil
+              end
+            end
 
-              if loc_array[0].present?
-                c = Country.find_by_name loc_array[0]
-                next if c.nil?
-                p.countries << c
+            unless row.location.blank?
+              row.location.split("|").map(&:strip).each do |loc|
+                loc_array = loc.split(">").map(&:strip)
 
-                if loc_array[1].present?
-                  r = c.regions.find_by_name loc_array[1]
-                  next if r.nil?
-                  p.regions << r
+                if loc_array[0].present?
+                  c = Country.find_by_name loc_array[0]
+                  next if c.nil?
+                  p.countries << c
 
-                  if loc_array[2].present?
-                    r2 = Region.where(:country_id => c.id, :parent_region_id => r.id).first
-                    next if r2.nil?
-                    p.regions << r2
+                  if loc_array[1].present?
+                    r = c.regions.find_by_name loc_array[1]
+                    next if r.nil?
+                    p.regions << r
+
+                    if loc_array[2].present?
+                      r2 = Region.where(:country_id => c.id, :parent_region_id => r.id).first
+                      next if r2.nil?
+                      p.regions << r2
+                    end
                   end
                 end
+
               end
-
             end
-          end
 
-          unless row.sectors.blank?
-            row.sectors.split("|").map(&:strip).each do |sec|
-              sect = Sector.find_by_name sec
-              if sect.nil?
-                sect = Sector.create(:name => sec)
+            unless row.sectors.blank?
+              row.sectors.split("|").map(&:strip).each do |sec|
+                sect = Sector.find_by_name sec
+                if sect.nil?
+                  sect = Sector.create(:name => sec)
+                end
+                p.sectors << sect
               end
-              p.sectors << sect
             end
-          end
 
-          unless row.target_groups.blank?
-            row.target_groups.split("|").map(&:strip).each do |aud|
-              a = Audience.find_by_name aud
-              if a.nil?
-                a = Audience.create(:name => aud)
+            unless row.target_groups.blank?
+              row.target_groups.split("|").map(&:strip).each do |aud|
+                a = Audience.find_by_name aud
+                if a.nil?
+                  a = Audience.create(:name => aud)
+                end
+                p.audiences << a
               end
-              p.audiences << a
             end
-          end
 
-          unless row.activities.blank?
-            row.activities.split("|").map(&:strip).each do |aud|
-              a = Activity.find_by_name aud
-              if a.nil?
-                a = Activity.create(:name => aud)
+            unless row.activities.blank?
+              row.activities.split("|").map(&:strip).each do |aud|
+                a = Activity.find_by_name aud
+                if a.nil?
+                  a = Activity.create(:name => aud)
+                end
+                p.activities << a
               end
-              p.activities << a
             end
-          end
 
-          unless row.diseases.blank?
-            row.diseases.split("|").map(&:strip).each do |aud|
-              a = Disease.find_by_name aud
-              if a.nil?
-                a = Disease.create(:name => aud)
+            unless row.diseases.blank?
+              row.diseases.split("|").map(&:strip).each do |aud|
+                a = Disease.find_by_name aud
+                if a.nil?
+                  a = Disease.create(:name => aud)
+                end
+                p.diseases << a
               end
-              p.diseases << a
             end
-          end
 
-          unless row.medicines.blank?
-            row.medicines.split("|").map(&:strip).each do |aud|
-              a = Medicine.find_by_name aud
-              if a.nil?
-                a = Medicine.create(:name => aud)
+            unless row.medicine.blank?
+              row.medicine.split("|").map(&:strip).each do |aud|
+                a = Medicine.find_by_name aud
+                if a.nil?
+                  a = Medicine.create(:name => aud)
+                end
+                p.medicines << a
               end
-              p.medicines << a
             end
-          end
 
 
-          unless row.donors.blank?
-            row.donors.split("|").map(&:strip).each do |don|
-              donor = Donor.where("name ilike ?",don).first
-              if donor.nil?
-                donor = Donor.create!(:name => don)
+            unless row.donors.blank?
+              row.donors.split("|").map(&:strip).each do |don|
+                donor = Donor.where("name ilike ?",don).first
+                if donor.nil?
+                  donor = Donor.create!(:name => don)
+                end
+                p.donations << Donation.new( :project => p, :donor => donor)
               end
-              p.donations << Donation.new( :project => p, :donor => donor)
             end
+
+            p.save!
+
           end
-
-          p.save!
-
+        rescue
+          nil
         end
       end
     end
@@ -373,6 +377,7 @@ namespace :iom do
 
     desc "load all available regions not imported already"
     task :load_vitamin => :environment do    
+
 
       unless File.exists? "#{Rails.root}/db/data/VitaminAngelsMappingData.csv"
         open("#{Rails.root}/db/data/VitaminAngelsMappingData.csv", "wb") do |file|
@@ -385,6 +390,8 @@ namespace :iom do
       csv_projs = CsvMapper.import("#{Rails.root}/db/data/VitaminAngelsMappingData.csv") do
         read_attributes_from_file
       end
+
+      p "VitaminAngelsMappingData.csv loaded"
 
       load_project_files( csv_projs )
 
@@ -400,6 +407,8 @@ namespace :iom do
         read_attributes_from_file
       end
 
+      p "VAAmericas.csv loaded"
+
       load_project_files( csv_projs )
 
       unless File.exists? "#{Rails.root}/db/data/VAIndia.csv"
@@ -413,6 +422,8 @@ namespace :iom do
       csv_projs = CsvMapper.import("#{Rails.root}/db/data/VAIndia.csv") do
         read_attributes_from_file
       end
+
+      p "VAIndia.csv loaded"
 
       load_project_files( csv_projs )
 

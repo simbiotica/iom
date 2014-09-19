@@ -265,6 +265,10 @@ HTML
           activity_path(pagination_params)
         elsif @data.is_a?(Audience)
           audience_path(pagination_params)
+        elsif @data.is_a?(Disease)
+          disease_path(pagination_params)
+        elsif @data.is_a?(Medicine)
+          medicine_path(pagination_params)
         else
           sector_path(pagination_params)
         end
