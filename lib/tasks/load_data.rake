@@ -244,7 +244,7 @@ namespace :iom do
             o = Organization.create!( :name => row.organization )
           end
 
-          p = o.projects.find_by_name row.project_name
+          p = o.projects.where(:name => row.project_name, :intervention_id => row.org_intervention_id).first
           if p.nil?
             p = Project.create({
               :primary_organization_id  => o.id,
