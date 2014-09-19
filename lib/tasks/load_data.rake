@@ -50,22 +50,20 @@ namespace :iom do
     end
 
     desc "load region data"
-    task :load_regions => :environment do
+
+    task :load_regions_0 => :environment do
       DB = ActiveRecord::Base.connection
       
-      # system("unzip -o #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.zip -d #{Rails.root}/db/data/countries/")
-      # system("shp2pgsql -d -s 4326 -gthe_geom -i -WLATIN1 #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.shp public.tmp_countries > ")
-
-      unless File.exists? "#{Rails.root}/db/data/new_master.sql"
-        open("#{Rails.root}/db/data/new_master.sql", "wb") do |file|
-          open("https://s3.amazonaws.com/filehost/new_master.sql") do |uri|
+      unless File.exists? "#{Rails.root}/db/data/admin0_regions.sql"
+        open("#{Rails.root}/db/data/admin0_regions.sql", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/admin0_regions.sql") do |uri|
              file.write(uri.read)
           end
         end
       end
 
 
-      sql = File.read("#{Rails.root}/db/data/new_master.sql")
+      sql = File.read("#{Rails.root}/db/data/admin0_regions.sql")
       statements = sql.split(/;$/)
       statements.pop  # the last empty statement
 
@@ -73,47 +71,125 @@ namespace :iom do
         DB.execute(statement)
       end
       
-      results = DB.select_rows "SELECT * from tmp_countries where name_1 = '.' and name_2 = '.'"
+      results = DB.select_rows "SELECT * from tmp_countries"
       results.each do |row|
-        country = Country.find_by_name row[16]
+        country = Country.find_by_name row[1]
         if country.nil?
-          DB.execute "INSERT INTO countries( name, code, center_lat, center_lon, iso3_code, the_geom, the_geom_geojson ) SELECT name0, iso, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), iso, the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
-          country = Country.find_by_name row[16]
+          DB.execute "INSERT INTO countries( name, center_lat, center_lon, the_geom, the_geom_geojson ) SELECT name0, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
+          country = Country.find_by_name row[1]
           country.save!
         end
       end
 
-      results = DB.select_rows "SELECT * from tmp_countries where name_1 != '.' and name_2 = '.'"
+      DB.execute 'DROP TABLE tmp_countries'
+    end
+
+    task :load_regions_1 => :environment do
+      DB = ActiveRecord::Base.connection
+      
+      unless File.exists? "#{Rails.root}/db/data/admin1_regions.sql"
+        open("#{Rails.root}/db/data/admin1_regions.sql", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/admin1_regions.sql") do |uri|
+             file.write(uri.read)
+          end
+        end
+      end
+
+
+      sql = File.read("#{Rails.root}/db/data/admin1_regions.sql")
+      statements = sql.split(/;$/)
+      statements.pop  # the last empty statement
+
+      statements.each do |statement|
+        DB.execute(statement)
+      end
+      
+      results = DB.select_rows "SELECT * from tmp_countries"
       results.each do |row|
-        country = Country.find_by_name row[16]
+
+        country = Country.find_by_name row[1]
         if country.nil?
-          country = Country.create!(:name => row[16], :code => row[2], :iso3_code => row[2])
+          Rails.logger.debug "Missing Country: #{row[1]}"
+          p "Missing Country: #{row[1]}"
+          next
         end
 
-        region = country.regions.find_by_name row[17]        
+        region = country.regions.find_by_name row[2]        
         if region.nil?
-          DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), first_hasc from tmp_countries where gid=#{row[0]}"
-          region = country.regions.find_by_name row[17]    
+          DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
+          region = country.regions.find_by_name row[2]    
           region.save!
         end
       end
 
-      results = DB.select_rows "SELECT * from tmp_countries where name_1 != '.' and name_2 != '.'"
+      DB.execute 'DROP TABLE tmp_countries'
+    end
+
+    task :load_regions_2 => :environment do
+      DB = ActiveRecord::Base.connection
+      
+      unless File.exists? "#{Rails.root}/db/data/admin2_regions.sql"
+        open("#{Rails.root}/db/data/admin2_regions.sql", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/admin2_regions.sql") do |uri|
+             file.write(uri.read)
+          end
+        end
+      end
+
+      sql = File.read("#{Rails.root}/db/data/admin2_regions.sql")
+      statements = sql.split(/;$/)
+      statements.pop  # the last empty statement
+
+      statements.each do |statement|
+        DB.execute(statement)
+      end
+      
+      results = DB.select_rows "SELECT * from tmp_countries where name1 = '.' and name2 = '.'"
       results.each do |row|
-        country = Country.find_by_name row[16]
+        country = Country.find_by_name row[2]
         if country.nil?
-          country = Country.create!(:name => row[16], :code => row[2], :iso3_code => row[2])
+          DB.execute "INSERT INTO countries( name, code, center_lat, center_lon, iso3_code, the_geom, the_geom_geojson ) SELECT name0, iso, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), iso, the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
+          country = Country.find_by_name row[2]
+          country.save!
+        end
+      end
+
+      results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 = '.'"
+      results.each do |row|
+        country = Country.find_by_name row[2]
+        if country.nil?
+          country = Country.create!(:name => row[2], :code => row[8], :iso3_code => row[8])
+        else
+          country.update_attributes(:code => row[8], :iso3_code => row[8])
         end
 
-        parent_region = country.regions.find_by_name row[17] 
-        if parent_region.nil?
-          parent_region = Region.create!(:name => row[17], :country_id => country.id)
-        end
 
-        region = Region.where(:name => row[18], :parent_region_id => parent_region.id, :country_id => country.id).first 
+        region = country.regions.find_by_name row[3]        
         if region.nil?
-          DB.execute "INSERT INTO regions(country_id, parent_region_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, #{parent_region.id}, 2, name2, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), first_hasc from tmp_countries where gid=#{row[0]}"
-          region = Region.where(:name => row[18], :parent_region_id => parent_region.id, :country_id => country.id).first 
+          DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), hasc from tmp_countries where gid=#{row[0]}"
+          region = country.regions.find_by_name row[3]    
+          region.save!
+        end
+      end
+
+      results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 != '.'"
+      results.each do |row|
+        country = Country.find_by_name row[2]
+        if country.nil?
+          country = Country.create!(:name => row[2], :code => row[8], :iso3_code => row[8])
+        else
+          country.update_attributes(:code => row[8], :iso3_code => row[8])
+        end
+
+        parent_region = country.regions.find_by_name row[3] 
+        if parent_region.nil?
+          parent_region = Region.create!(:name => row[3], :country_id => country.id, :level => 1)
+        end
+
+        region = Region.where(:name => row[4], :parent_region_id => parent_region.id, :country_id => country.id).first 
+        if region.nil?
+          DB.execute "INSERT INTO regions(country_id, parent_region_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, #{parent_region.id}, 2, name2, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), hasc from tmp_countries where gid=#{row[0]}"
+          region = Region.where(:name => row[4], :parent_region_id => parent_region.id, :country_id => country.id).first 
           region.save!
         end
       end
@@ -121,6 +197,8 @@ namespace :iom do
 
       DB.execute 'DROP TABLE tmp_countries'
     end
+
+
 
 
     desc "load all available regions not imported already"
