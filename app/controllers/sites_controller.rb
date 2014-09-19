@@ -6,7 +6,6 @@ class SitesController < ApplicationController
   caches_action :general_home, :expires_in => 300, :cache_path => Proc.new { |c| c.params }
 
   def home
-
     if @site
       site_home
     else
@@ -30,7 +29,6 @@ class SitesController < ApplicationController
                                            :order => 'created_at DESC'
 
     @footer_sites = @site.present? ? @site.sites_for_footer : []
-
     respond_to do |format|
       format.html do
         # Get the data for the map depending on the region definition of the site (country or region)
@@ -65,12 +63,10 @@ class SitesController < ApplicationController
                       inner join countries as c on cp.country_id=c.id
                       group by c.id,c.name,lon,lat,iso2_code"
           end
-
           result = ActiveRecord::Base.connection.execute(sql)
         else
           result = []
         end
-
         @map_data = result.map do |r|
           uri = URI.parse(r['url'])
           params = Hash[uri.query.split('&').map{|p| p.split('=')}] rescue {}
@@ -79,10 +75,9 @@ class SitesController < ApplicationController
           r['url'] = uri.to_s
           r
         end.to_json
-
-        @overview_map_chco = @site.present? ? @site.theme.data[:overview_map_chco] : nil
-        @overview_map_chf =  @site.present? ? @site.theme.data[:overview_map_chf] : nil
-        @overview_map_marker_source =  @site.present? ? @site.theme.data[:overview_map_marker_source] : nil
+        @overview_map_chco = @site.present? & @site.theme.present? ? @site.theme.data[:overview_map_chco] : nil
+        @overview_map_chf =  @site.present? & @site.theme.present? ? @site.theme.data[:overview_map_chf] : nil
+        @overview_map_marker_source =  @site.present? & @site.theme.present? ? @site.theme.data[:overview_map_marker_source] : nil
 
         areas= []
         data = []
@@ -96,6 +91,7 @@ class SitesController < ApplicationController
         end
         @chld = areas.join("|")
         @chd  = "t:"+data.join(",")
+
         render request.fullpath.match('home2') ? :site_home2 : :site_home
       end
       format.js do

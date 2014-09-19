@@ -53,8 +53,7 @@ class ApplicationController < ActionController::Base
       if params[:force_site_id] || params[:force_site_name]
         @site = Site.find(params[:force_site_id]) if params[:force_site_id]
         @site = Site.where('LOWER(name) = ?', params[:force_site_name].downcase).first if params[:force_site_name]
-
-        self.default_url_options = {:force_site_id => @site.id} if @site
+        self.default_url_options = (self.default_url_options || {}).merge({:force_site_id => @site.id}) if @site
         return
       end
 

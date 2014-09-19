@@ -611,7 +611,12 @@ SQL
 
     total_entries = ActiveRecord::Base.connection.execute("select count(*) as count from (#{sql}) as q").first['count'].to_i
 
-    total_pages = (total_entries.to_f / options[:per_page].to_f).ceil
+    options[:per_page] = 1 if options[:per_page] < 1
+    if total_entries.to_f == 0.0
+      total_pages = 1
+    else
+      total_pages = (total_entries.to_f / options[:per_page].to_f).ceil
+    end
 
     start_in_page = if options[:start_in_page]
       options[:start_in_page].to_i

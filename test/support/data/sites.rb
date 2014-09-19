@@ -30,9 +30,19 @@ module Iom
             :project_context_cluster_id => cluster.id,
             :navigate_by_level1 => true
           }
+         when :global
+          {
+            :name => 'global', :short_description => 'Global site to unify all projects',
+            :long_description => 'Haiti Aid Map long desc',
+            :contact_email => 'contact@example.com', 
+            :url => 'http://global.example.com',
+            :blog_url => '', :theme => nil,
+            :show_global_donations_raises => true, :geographic_context_country_id => nil, :geographic_context_region_id => nil,
+            :navigate_by_level1 => true
+          }                             
         else
           raise "Invalid fixture name"
-      end
+        end
       default_attributes.merge(attributes)
     end
 
