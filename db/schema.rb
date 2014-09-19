@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140918233549) do
+ActiveRecord::Schema.define(:version => 20140919032725) do
 
   create_table "activities", :force => true do |t|
     t.string   "name"
@@ -84,6 +84,17 @@ ActiveRecord::Schema.define(:version => 20140918233549) do
     t.integer  "site_id"
     t.datetime "created_at"
     t.date     "start_date"
+  end
+
+  create_table "diseases", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "diseases_projects", :id => false, :force => true do |t|
+    t.integer "disease_id"
+    t.integer "project_id"
   end
 
   create_table "donations", :force => true do |t|
@@ -161,6 +172,17 @@ ActiveRecord::Schema.define(:version => 20140918233549) do
     t.string   "video_thumb_content_type"
     t.integer  "video_thumb_file_size"
     t.datetime "video_thumb_updated_at"
+  end
+
+  create_table "medicines", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "medicines_projects", :id => false, :force => true do |t|
+    t.integer "medicine_id"
+    t.integer "project_id"
   end
 
   create_table "offices", :force => true do |t|

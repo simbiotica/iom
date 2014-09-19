@@ -41,7 +41,7 @@
                 </div>
               </li>
 
-              <li class="audience">
+              <li class="regions">
                 <span class="father">Activities</span>
                 <div class="mod-go-up-menu menu">
                   <ul class="mod-categories-child organizations-child">
@@ -50,6 +50,18 @@
                     <% end %>
                   </ul>
                   <input type="text" class="mod-categories-search" placeholder="Search Activities">
+                </div>
+              </li>
+
+              <li class="audience">
+                <span class="father">Diseases</span>
+                <div class="mod-go-up-menu menu">
+                  <ul class="mod-categories-child organizations-child">
+                    <% @site.diseases_select.each do |disease| %>
+                      <li><a href="<%= disease_path(disease) %>"><%= disease.name %></a></li>
+                    <% end %>
+                  </ul>
+                  <input type="text" class="mod-categories-search" placeholder="Search Diseases">
                 </div>
               </li>
 
@@ -90,13 +102,6 @@
                 </div>
               </li>
             <% end %>
-
-            <li class="mod-form search">
-              <%= form_tag(search_path, :method => :get) do %>
-                <%= text_field_tag :q, params[:q], :placeholder=>'SEARCH'%>
-                <input type="submit" value="">
-              <% end %>
-            </li>
 
             </ul>
           </nav>

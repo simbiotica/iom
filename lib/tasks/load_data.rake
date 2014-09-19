@@ -67,9 +67,13 @@ namespace :iom do
       statements = sql.split(/;$/)
       statements.pop  # the last empty statement
 
+      p "File Loaded"
+
       statements.each do |statement|
         DB.execute(statement)
       end
+
+      p "Statements Executed"
       
       results = DB.select_rows "SELECT * from tmp_countries"
       results.each do |row|
@@ -86,6 +90,9 @@ namespace :iom do
 
     task :load_regions_1 => :environment do
       DB = ActiveRecord::Base.connection
+
+      countries = {}
+      Country.all.each{|c| countries[c.name] = c }
       
       unless File.exists? "#{Rails.root}/db/data/admin1_regions.sql"
         open("#{Rails.root}/db/data/admin1_regions.sql", "wb") do |file|
@@ -95,6 +102,7 @@ namespace :iom do
         end
       end
 
+      p "File Loaded"
 
       sql = File.read("#{Rails.root}/db/data/admin1_regions.sql")
       statements = sql.split(/;$/)
@@ -103,23 +111,31 @@ namespace :iom do
       statements.each do |statement|
         DB.execute(statement)
       end
+
+      p "Statements Executed"
       
-      results = DB.select_rows "SELECT * from tmp_countries"
-      results.each do |row|
 
-        country = Country.find_by_name row[1]
-        if country.nil?
-          Rails.logger.debug "Missing Country: #{row[1]}"
-          p "Missing Country: #{row[1]}"
-          next
-        end
+      i = 0
+      results = DB.select_rows "SELECT * from tmp_countries limit 100 offset #{i}"
+      while results.count > 0
+      
+        results.each do |row|
 
-        region = country.regions.find_by_name row[2]        
-        if region.nil?
-          DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
-          region = country.regions.find_by_name row[2]    
-          region.save!
+          country = countries[ row[1] ]
+          country = Country.find_by_name row[1] if country.nil?
+          if country.nil?
+            country = Country.create!( :name => row[1] )
+          end
+
+          region = country.regions.find_by_name row[2]        
+          if region.nil?
+            DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
+            region = country.regions.find_by_name row[2]    
+            region.save!
+          end
         end
+        i += 100
+        results = DB.select_rows "SELECT * from tmp_countries limit 100 offset #{i}"
       end
 
       DB.execute 'DROP TABLE tmp_countries'
@@ -128,6 +144,10 @@ namespace :iom do
     task :load_regions_2 => :environment do
       DB = ActiveRecord::Base.connection
       
+      # cache countries because this seems to be a bottleneck
+      countries = {}
+      Country.all.each{|c| countries[c.name] = c }
+
       unless File.exists? "#{Rails.root}/db/data/admin2_regions.sql"
         open("#{Rails.root}/db/data/admin2_regions.sql", "wb") do |file|
           open("https://s3.amazonaws.com/filehost/admin2_regions.sql") do |uri|
@@ -136,6 +156,8 @@ namespace :iom do
         end
       end
 
+      p "File Loaded"
+
       sql = File.read("#{Rails.root}/db/data/admin2_regions.sql")
       statements = sql.split(/;$/)
       statements.pop  # the last empty statement
@@ -143,10 +165,13 @@ namespace :iom do
       statements.each do |statement|
         DB.execute(statement)
       end
+
+      p "Statements Executed"
       
       results = DB.select_rows "SELECT * from tmp_countries where name1 = '.' and name2 = '.'"
       results.each do |row|
-        country = Country.find_by_name row[2]
+        country = countries[ row[2] ]
+        country = Country.find_by_name row[2] if country.nil?
         if country.nil?
           DB.execute "INSERT INTO countries( name, code, center_lat, center_lon, iso3_code, the_geom, the_geom_geojson ) SELECT name0, iso, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), iso, the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
           country = Country.find_by_name row[2]
@@ -154,9 +179,12 @@ namespace :iom do
         end
       end
 
+      p "Level 0 Complete"
+
       results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 = '.'"
       results.each do |row|
-        country = Country.find_by_name row[2]
+        country = countries[ row[2] ]
+        country = Country.find_by_name row[2] if country.nil?
         if country.nil?
           country = Country.create!(:name => row[2], :code => row[8], :iso3_code => row[8])
         else
@@ -172,50 +200,43 @@ namespace :iom do
         end
       end
 
-      results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 != '.'"
-      results.each do |row|
-        country = Country.find_by_name row[2]
-        if country.nil?
-          country = Country.create!(:name => row[2], :code => row[8], :iso3_code => row[8])
-        else
-          country.update_attributes(:code => row[8], :iso3_code => row[8])
-        end
+      p "Level 1 Complete"
 
-        parent_region = country.regions.find_by_name row[3] 
-        if parent_region.nil?
-          parent_region = Region.create!(:name => row[3], :country_id => country.id, :level => 1)
-        end
 
-        region = Region.where(:name => row[4], :parent_region_id => parent_region.id, :country_id => country.id).first 
-        if region.nil?
-          DB.execute "INSERT INTO regions(country_id, parent_region_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, #{parent_region.id}, 2, name2, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), hasc from tmp_countries where gid=#{row[0]}"
+      i = 0
+      results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 != '.' limit 100 offset #{i}"
+      while results.count > 0
+        results.each do |row|
+          country = countries[ row[2] ] 
+          country = Country.find_by_name row[2] if country.nil?
+          if country.nil?
+            country = Country.create!(:name => row[2], :code => row[8], :iso3_code => row[8])
+          else
+            country.update_attributes(:code => row[8], :iso3_code => row[8])
+          end
+
+          parent_region = country.regions.find_by_name row[3] 
+          if parent_region.nil?
+            parent_region = Region.create!(:name => row[3], :country_id => country.id, :level => 1)
+          end
+
           region = Region.where(:name => row[4], :parent_region_id => parent_region.id, :country_id => country.id).first 
-          region.save!
+          if region.nil?
+            DB.execute "INSERT INTO regions(country_id, parent_region_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, #{parent_region.id}, 2, name2, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), hasc from tmp_countries where gid=#{row[0]}"
+            region = Region.where(:name => row[4], :parent_region_id => parent_region.id, :country_id => country.id).first 
+            region.save!
+          end
         end
+        i += 100
+        results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 != '.' limit 100 offset #{i}"
       end
 
+      p "Level 2 Complete"
 
       DB.execute 'DROP TABLE tmp_countries'
     end
 
-
-
-
-    desc "load all available regions not imported already"
-    task :load_vitamin => :environment do    
-
-      unless File.exists? "#{Rails.root}/db/data/VitaminAngelsMappingData.csv"
-        open("#{Rails.root}/db/data/VitaminAngelsMappingData.csv", "wb") do |file|
-          open("https://s3.amazonaws.com/filehost/VitaminAngelsMappingData.csv") do |uri|
-             file.write(uri.read)
-          end
-        end
-      end
-
-      csv_projs = CsvMapper.import("#{Rails.root}/db/data/VitaminAngelsMappingData.csv") do
-        read_attributes_from_file
-      end
-
+    def load_project_files( csv_projs )
       csv_projs.each do |row|
         o = Organization.find_by_name row.organization
         if o.nil?
@@ -312,6 +333,26 @@ namespace :iom do
             end
           end
 
+          unless row.diseases.blank?
+            row.diseases.split("|").map(&:strip).each do |aud|
+              a = Disease.find_by_name aud
+              if a.nil?
+                a = Disease.create(:name => aud)
+              end
+              p.diseases << a
+            end
+          end
+
+          unless row.medicines.blank?
+            row.medicines.split("|").map(&:strip).each do |aud|
+              a = Medicine.find_by_name aud
+              if a.nil?
+                a = Medicine.create(:name => aud)
+              end
+              p.medicines << a
+            end
+          end
+
 
           unless row.donors.blank?
             row.donors.split("|").map(&:strip).each do |don|
@@ -327,6 +368,53 @@ namespace :iom do
 
         end
       end
+    end
+
+
+    desc "load all available regions not imported already"
+    task :load_vitamin => :environment do    
+
+      unless File.exists? "#{Rails.root}/db/data/VitaminAngelsMappingData.csv"
+        open("#{Rails.root}/db/data/VitaminAngelsMappingData.csv", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/VitaminAngelsMappingData.csv") do |uri|
+             file.write(uri.read)
+          end
+        end
+      end
+
+      csv_projs = CsvMapper.import("#{Rails.root}/db/data/VitaminAngelsMappingData.csv") do
+        read_attributes_from_file
+      end
+
+      load_project_files( csv_projs )
+
+      unless File.exists? "#{Rails.root}/db/data/VAAmericas.csv"
+        open("#{Rails.root}/db/data/VAAmericas.csv", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/VAAmericas.csv") do |uri|
+             file.write(uri.read)
+          end
+        end
+      end
+
+      csv_projs = CsvMapper.import("#{Rails.root}/db/data/VAAmericas.csv") do
+        read_attributes_from_file
+      end
+
+      load_project_files( csv_projs )
+
+      unless File.exists? "#{Rails.root}/db/data/VAIndia.csv"
+        open("#{Rails.root}/db/data/VAIndia.csv", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/VAIndia.csv") do |uri|
+             file.write(uri.read)
+          end
+        end
+      end
+
+      csv_projs = CsvMapper.import("#{Rails.root}/db/data/VAIndia.csv") do
+        read_attributes_from_file
+      end
+
+      load_project_files( csv_projs )
 
     end
 

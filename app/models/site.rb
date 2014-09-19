@@ -636,6 +636,22 @@ SQL
       ORDER BY a.name ASC"
   end
 
+  def diseases_select
+    Activity.find_by_sql " SELECT distinct a.id as id , a.name as name
+      FROM projects_sites AS ps JOIN projects as p ON ps.project_id = p.id AND ps.site_id = #{self.id} AND p.end_date > NOW()
+      JOIN diseases_projects as pa ON pa.project_id = p.id
+      JOIN diseases as a on a.id = pa.disease_id
+      ORDER BY a.name ASC"
+  end
+
+  def medicines_select
+    Activity.find_by_sql " SELECT distinct a.id as id , a.name as name
+      FROM projects_sites AS ps JOIN projects as p ON ps.project_id = p.id AND ps.site_id = #{self.id} AND p.end_date > NOW()
+      JOIN medicines_projects as pa ON pa.project_id = p.id
+      JOIN medicines as a on a.id = pa.medicine_id
+      ORDER BY a.name ASC"
+  end
+
   def regions
     if geographic_context_country_id.blank? && geographic_context_region_id.blank?
       []
