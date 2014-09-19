@@ -127,7 +127,7 @@
     </span>
 
   </div>
-  <div class="field">
+  <div class="field" style="float: none;">
     <span class="chars">
       <label>ACTIVITIES
         <strong>&nbsp;</strong>
@@ -148,13 +148,116 @@
         </div>
         <!-- END FIELD DESCRIPTION -->
       </label>
-      <% activities = f.object.activities || '' %>
-      <p id="chars_left_activities"><%= 10000 - activities.length %> chars left</p>
     </span>
-    <span class="textarea">
-      <%= f.text_area :activities, :onkeyup=> "limitChars('project_activities', 10000, 'chars_left_activities')"%>
-    </span>
+    <div style="margin-left: 25px;">
+      <% Activity.all.each do |activity| %>
+        <label style="margin: 5px;">
+          <input type="checkbox" value="<%=activity.id%>" name="project[activity_ids][]" <%="checked" if @project.activity_ids.include?(activity.id) %> style="float: none;visibility: visible;width: initial;" />
+          <%= activity.name %>
+        </label>
+      <% end %>
+    </div>
   </div>
+
+
+  <div class="field" style="float: none;">
+    <span class="chars">
+      <label>AUDIENCE
+        <strong>&nbsp;</strong>
+        <!-- FIELD DESCRIPTION -->
+        <div class="field_info">
+          <span class="info">i</span>
+          <div class="field_text">
+            <div class="top">
+              <a href="#close">x</a>
+            </div>
+            <div class="bottom">
+              <h3>Project audience</h3>
+              <span class="scroll">
+              <p>Description of project audience.</p>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- END FIELD DESCRIPTION -->
+      </label>
+    </span>
+    <div style="margin-left: 25px;">
+      <% Audience.all.each do |audience| %>
+        <label style="margin: 5px;">
+          <input type="checkbox" value="<%=audience.id%>" name="project[audience_ids][]" <%="checked" if @project.audience_ids.include?(audience.id) %> style="float: none;visibility: visible;width: initial;" />
+          <%= audience.name %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+
+  <div class="field" style="float: none;">
+    <span class="chars">
+      <label>DISEASE
+        <strong>&nbsp;</strong>
+        <!-- FIELD DESCRIPTION -->
+        <div class="field_info">
+          <span class="info">i</span>
+          <div class="field_text">
+            <div class="top">
+              <a href="#close">x</a>
+            </div>
+            <div class="bottom">
+              <h3>Project diseases</h3>
+              <span class="scroll">
+              <p>Description of project diseases.</p>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- END FIELD DESCRIPTION -->
+      </label>
+    </span>
+    <div style="margin-left: 25px;">
+      <% Disease.all.each do |disease| %>
+        <label style="margin: 5px;">
+          <input type="checkbox" value="<%=disease.id%>" name="project[disease_ids][]" <%="checked" if @project.disease_ids.include?(disease.id) %> style="float: none;visibility: visible;width: initial;" />
+          <%= disease.name %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="field" style="float: none;">
+    <span class="chars">
+      <label>MEDICINE
+        <strong>&nbsp;</strong>
+        <!-- FIELD DESCRIPTION -->
+        <div class="field_info">
+          <span class="info">i</span>
+          <div class="field_text">
+            <div class="top">
+              <a href="#close">x</a>
+            </div>
+            <div class="bottom">
+              <h3>Project medicine</h3>
+              <span class="scroll">
+              <p>Description of project medicines.</p>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- END FIELD DESCRIPTION -->
+      </label>
+    </span>
+    <div style="margin-left: 25px;">
+      <% Medicine.all.each do |medicine| %>
+        <label style="margin: 5px;">
+          <input type="checkbox" value="<%=medicine.id%>" name="project[medicine_ids][]" <%="checked" if @project.medicine_ids.include?(medicine.id) %> style="float: none;visibility: visible;width: initial;" />
+          <%= medicine.name %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+
   <div class="field">
     <span class="chars">
       <label>ADDITIONAL INFORMATION
