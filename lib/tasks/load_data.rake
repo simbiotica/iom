@@ -1,15 +1,25 @@
 namespace :db do
-  desc 'Remove,Create,Seed and load data'
-  task :iom_reset => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
 
-  desc 'reset 1'
-  task :reset_1 => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries)
+  # IGNORE THESE THINGS
+  # Current proper order is (run each line separately, only combine ones combined on one line):
+  # db:drop db:create iom:postgis_init db:migrate  
+  # iom:data:load_regions_0
+  # iom:data:load_regions_1
+  # iom:data:load_regions_2
+  # db:seed
+  # iom:data:load_vitamin
 
-  desc 'reset 2'
-  task :reset_2 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
+  # desc 'Remove,Create,Seed and load data'
+  # task :iom_reset => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
 
-  desc 'reset 3'
-  task :reset_3 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_food_security_projects)
+  # desc 'reset 1'
+  # task :reset_1 => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries)
+
+  # desc 'reset 2'
+  # task :reset_2 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
+
+  # desc 'reset 3'
+  # task :reset_3 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_food_security_projects)
 end
 
 namespace :iom do
@@ -406,6 +416,8 @@ namespace :iom do
 
       load_project_files( csv_projs )
 
+      GC.start
+
       unless File.exists? "#{Rails.root}/db/data/VAAmericas.csv"
         open("#{Rails.root}/db/data/VAAmericas.csv", "wb") do |file|
           open("https://s3.amazonaws.com/filehost/VAAmericas.csv") do |uri|
@@ -421,6 +433,8 @@ namespace :iom do
       p "VAAmericas.csv loaded"
 
       load_project_files( csv_projs )
+
+      GC.start
 
       unless File.exists? "#{Rails.root}/db/data/VAIndia.csv"
         open("#{Rails.root}/db/data/VAIndia.csv", "wb") do |file|
