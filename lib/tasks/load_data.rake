@@ -73,6 +73,8 @@ namespace :iom do
         DB.execute(statement)
       end
 
+      GC.start
+
       p "Statements Executed"
       
       results = DB.select_rows "SELECT * from tmp_countries"
@@ -136,6 +138,7 @@ namespace :iom do
         end
         i += 100
         results = DB.select_rows "SELECT * from tmp_countries limit 100 offset #{i}"
+        GC.start
       end
 
       DB.execute 'DROP TABLE tmp_countries'
@@ -156,8 +159,6 @@ namespace :iom do
         end
       end
 
-      p "File Loaded"
-
       sql = File.read("#{Rails.root}/db/data/admin2_regions.sql")
       statements = sql.split(/;$/)
       statements.pop  # the last empty statement
@@ -165,16 +166,19 @@ namespace :iom do
       statements.each do |statement|
         DB.execute(statement)
       end
+      sql = nil
+      statements = nil
 
-      p "Statements Executed"
+      GC.start
       
       results = DB.select_rows "SELECT * from tmp_countries where name1 = '.' and name2 = '.'"
       results.each do |row|
-        country = countries[ row[2] ]
-        country = Country.find_by_name row[2] if country.nil?
+        country = countries[ row[2].titleize ]
+        country = Country.find_by_name_insensitive row[2] if country.nil?
         if country.nil?
           DB.execute "INSERT INTO countries( name, code, center_lat, center_lon, iso3_code, the_geom, the_geom_geojson ) SELECT name0, iso, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), iso, the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
-          country = Country.find_by_name row[2]
+          country = Country.find_by_name_insensitive row[2]
+          country.name = country.name.titleize
           country.save!
         end
       end
@@ -183,52 +187,59 @@ namespace :iom do
 
       results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 = '.'"
       results.each do |row|
-        country = countries[ row[2] ]
-        country = Country.find_by_name row[2] if country.nil?
+        country = countries[ row[2].titleize ]
+        country = Country.find_by_name_insensitive row[2] if country.nil?
         if country.nil?
-          country = Country.create!(:name => row[2], :code => row[8], :iso3_code => row[8])
+          country = Country.create!(:name => row[2].titleize, :code => row[8], :iso3_code => row[8])
         else
-          country.update_attributes(:code => row[8], :iso3_code => row[8])
+          country.update_attributes(:name => row[2].titleize, :code => row[8], :iso3_code => row[8])
         end
 
 
-        region = country.regions.find_by_name row[3]        
+        region = country.regions.find_by_name_insensitive row[3].titleize     
         if region.nil?
           DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), hasc from tmp_countries where gid=#{row[0]}"
-          region = country.regions.find_by_name row[3]    
+          region = country.regions.find_by_name_insensitive row[3]
+          region.name = region.name.titleize
           region.save!
         end
       end
 
       p "Level 1 Complete"
 
+      GC.start
 
       i = 0
       results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 != '.' limit 100 offset #{i}"
       while results.count > 0
+
         results.each do |row|
-          country = countries[ row[2] ] 
-          country = Country.find_by_name row[2] if country.nil?
+          country = countries[ row[2].titleize ] 
+          country = Country.find_by_name_insensitive row[2] if country.nil?
           if country.nil?
-            country = Country.create!(:name => row[2], :code => row[8], :iso3_code => row[8])
+            country = Country.create!(:name => row[2].titleize, :code => row[8], :iso3_code => row[8])
           else
-            country.update_attributes(:code => row[8], :iso3_code => row[8])
+            # country.update_attributes(:name => row[2].titleize, :code => row[8], :iso3_code => row[8])
+            DB.execute( "UPDATE countries set iso3_code='#{row[8]}' where id=#{country.id} ")
           end
+          countries[ country.name ] = country if countries[ country.name ].nil?
 
-          parent_region = country.regions.find_by_name row[3] 
+          parent_region = country.regions.find_by_name_insensitive row[3]
           if parent_region.nil?
-            parent_region = Region.create!(:name => row[3], :country_id => country.id, :level => 1)
+            parent_region = Region.create!(:name => row[3].titleize, :country_id => country.id, :level => 1)
           end
 
-          region = Region.where(:name => row[4], :parent_region_id => parent_region.id, :country_id => country.id).first 
+          region = Region.where(:parent_region_id => parent_region.id, :country_id => country.id).find_by_name_insensitive( row[4] )
           if region.nil?
             DB.execute "INSERT INTO regions(country_id, parent_region_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, #{parent_region.id}, 2, name2, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), hasc from tmp_countries where gid=#{row[0]}"
             region = Region.where(:name => row[4], :parent_region_id => parent_region.id, :country_id => country.id).first 
+            region.name = region.name.titleize
             region.save!
           end
         end
         i += 100
         results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 != '.' limit 100 offset #{i}"
+        GC.start
       end
 
       p "Level 2 Complete"
