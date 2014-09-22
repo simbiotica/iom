@@ -391,6 +391,7 @@ class Project < ActiveRecord::Base
         p.organization_id as org_intervention_id,
         CASE WHEN p.end_date > current_date THEN 'active' ELSE 'closed' END AS status
         #{kml_select}
+        #{geojson_select}
         FROM projects AS p
         LEFT OUTER JOIN organizations o        ON  o.id = p.primary_organization_id
         LEFT OUTER JOIN projects_sites ps      ON  ps.project_id = p.id
@@ -678,6 +679,10 @@ SQL
   end
 
   def the_geom_to_value
+    # RGEO TODO
+    # what exactly do we want here? the_geom for a project can be a collection of multipolygons, so
+    # it wouldn't make sense to serialize it as just a list of points
+
     return "" if the_geom.blank? || !the_geom.respond_to?(:points)
     the_geom.points.map do |point|
       "(#{point.y} #{point.x})"
