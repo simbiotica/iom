@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: audiences
+# Table name: diseases
 #
 #  id         :integer          not null, primary key
 #  name       :string(255)
@@ -10,6 +10,6 @@
 
 require 'spec_helper'
 
-describe Audience do
+describe Disease do
   pending "add some examples to (or delete) #{__FILE__}"
 end

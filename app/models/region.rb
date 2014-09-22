@@ -30,6 +30,10 @@ class Region < ActiveRecord::Base
 
   after_save :set_path
 
+  def self.find_by_name_insensitive( name )
+    where('lower(name) = lower(?)', name).first
+  end
+
   def self.custom_fields
     (columns.map{ |c| c.name } - ['the_geom']).map{ |c| "#{self.table_name}.#{c}" }
   end

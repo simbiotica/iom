@@ -1,15 +1,25 @@
 namespace :db do
-  desc 'Remove,Create,Seed and load data'
-  task :iom_reset => %w(db:drop db:create iom:postgis_init db:migrate iom:tiger_init iom:data:load_countries db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
 
-  desc 'reset 1'
-  task :reset_1 => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries)
+  # IGNORE THESE THINGS
+  # Current proper order is (run each line separately, only combine ones combined on one line):
+  # db:drop db:create iom:postgis_init db:migrate  
+  # iom:data:load_regions_0
+  # iom:data:load_regions_1
+  # iom:data:load_regions_2
+  # db:seed
+  # iom:data:load_vitamin
 
-  desc 'reset 2'
-  task :reset_2 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
+  # desc 'Remove,Create,Seed and load data'
+  # task :iom_reset => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
 
-  desc 'reset 3'
-  task :reset_3 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_food_security_projects)
+  # desc 'reset 1'
+  # task :reset_1 => %w(db:drop db:create iom:postgis_init db:migrate iom:data:load_countries)
+
+  # desc 'reset 2'
+  # task :reset_2 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_projects)
+
+  # desc 'reset 3'
+  # task :reset_3 => %w(db:seed iom:data:load_adm_levels iom:data:load_orgs iom:data:load_food_security_projects)
 end
 
 namespace :iom do
@@ -55,81 +65,349 @@ namespace :iom do
     end
 
     desc "load region data"
-    task :load_regions => :environment do
+
+    task :load_regions_0 => :environment do
       DB = ActiveRecord::Base.connection
       
-      # system("unzip -o #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.zip -d #{Rails.root}/db/data/countries/")
-      # system("shp2pgsql -d -s 4326 -gthe_geom -i -WLATIN1 #{Rails.root}/db/data/countries/TM_WORLD_BORDERS-0.3.shp public.tmp_countries > ")
-
-      unless File.exists? "#{Rails.root}/db/data/new_master.sql"
-        open("#{Rails.root}/db/data/new_master.sql", "wb") do |file|
-          open("https://s3.amazonaws.com/filehost/new_master.sql") do |uri|
+      unless File.exists? "#{Rails.root}/db/data/admin0_regions.sql"
+        open("#{Rails.root}/db/data/admin0_regions.sql", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/admin0_regions.sql") do |uri|
              file.write(uri.read)
           end
         end
       end
 
 
-      sql = File.read("#{Rails.root}/db/data/new_master.sql")
+      sql = File.read("#{Rails.root}/db/data/admin0_regions.sql")
+      statements = sql.split(/;$/)
+      statements.pop  # the last empty statement
+
+      p "File Loaded"
+
+      statements.each do |statement|
+        DB.execute(statement)
+      end
+
+      GC.start
+
+      p "Statements Executed"
+      
+      results = DB.select_rows "SELECT * from tmp_countries"
+      results.each do |row|
+        country = Country.find_by_name_insensitive row[1]
+        if country.nil?
+          DB.execute "INSERT INTO countries( name, center_lat, center_lon, the_geom, the_geom_geojson ) SELECT name0, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
+          country = Country.find_by_name row[1]
+          country.name = country.name.titleize
+          country.save!
+        end
+      end
+
+      DB.execute 'DROP TABLE tmp_countries'
+    end
+
+    task :load_regions_1 => :environment do
+      DB = ActiveRecord::Base.connection
+
+      countries = {}
+      Country.all.each{|c| countries[c.name] = c }
+      
+      unless File.exists? "#{Rails.root}/db/data/admin1_regions.sql"
+        open("#{Rails.root}/db/data/admin1_regions.sql", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/admin1_regions.sql") do |uri|
+             file.write(uri.read)
+          end
+        end
+      end
+
+      p "File Loaded"
+
+      sql = File.read("#{Rails.root}/db/data/admin1_regions.sql")
       statements = sql.split(/;$/)
       statements.pop  # the last empty statement
 
       statements.each do |statement|
         DB.execute(statement)
       end
+
+      p "Statements Executed"
       
-      results = DB.select_rows "SELECT * from tmp_countries where name_1 = '.' and name_2 = '.'"
+
+      i = 0
+      results = DB.select_rows "SELECT * from tmp_countries limit 100 offset #{i}"
+      while results.count > 0
+      
+        results.each do |row|
+
+          country = countries[ row[1] ]
+          country = Country.find_by_name_insensitive row[1] if country.nil?
+          if country.nil?
+            country = Country.create!( :name => row[1].titleize )
+          end
+
+          next if row[2].nil?
+
+          region = country.regions.find_by_name_insensitive row[2]        
+          if region.nil?
+            DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
+            region = country.regions.find_by_name row[2]
+            region.name = region.name.titleize
+            region.save!
+          end
+        end
+        i += 100
+        results = DB.select_rows "SELECT * from tmp_countries limit 100 offset #{i}"
+        GC.start
+      end
+
+      DB.execute 'DROP TABLE tmp_countries'
+    end
+
+    task :load_regions_2 => :environment do
+      DB = ActiveRecord::Base.connection
+      
+      # cache countries because this seems to be a bottleneck
+      countries = {}
+      Country.all.each{|c| countries[c.name] = c }
+
+      unless File.exists? "#{Rails.root}/db/data/admin2_regions.sql"
+        open("#{Rails.root}/db/data/admin2_regions.sql", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/admin2_regions.sql") do |uri|
+             file.write(uri.read)
+          end
+        end
+      end
+
+      sql = File.read("#{Rails.root}/db/data/admin2_regions.sql")
+      statements = sql.split(/;$/)
+      statements.pop  # the last empty statement
+
+      statements.each do |statement|
+        DB.execute(statement)
+      end
+      sql = nil
+      statements = nil
+
+      GC.start
+      
+      results = DB.select_rows "SELECT * from tmp_countries where name1 = '.' and name2 = '.'"
       results.each do |row|
-        country = Country.find_by_name row[16]
+        country = countries[ row[2].titleize ]
+        country = Country.find_by_name_insensitive row[2] if country.nil?
         if country.nil?
           DB.execute "INSERT INTO countries( name, code, center_lat, center_lon, iso3_code, the_geom, the_geom_geojson ) SELECT name0, iso, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), iso, the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
-          country = Country.find_by_name row[16]
+          country = Country.find_by_name_insensitive row[2]
+          country.name = country.name.titleize
           country.save!
         end
       end
 
-      results = DB.select_rows "SELECT * from tmp_countries where name_1 != '.' and name_2 = '.'"
+      p "Level 0 Complete"
+
+      results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 = '.'"
       results.each do |row|
-        country = Country.find_by_name row[16]
+        country = countries[ row[2].titleize ]
+        country = Country.find_by_name_insensitive row[2] if country.nil?
         if country.nil?
-          country = Country.create!(:name => row[16], :code => row[2], :iso3_code => row[2])
+          country = Country.create!(:name => row[2].titleize, :code => row[8], :iso3_code => row[8])
+        else
+          country.update_attributes(:name => row[2].titleize, :code => row[8], :iso3_code => row[8])
         end
 
-        region = country.regions.find_by_name row[17]        
+
+        region = country.regions.find_by_name_insensitive row[3].titleize     
         if region.nil?
-          DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), first_hasc from tmp_countries where gid=#{row[0]}"
-          region = country.regions.find_by_name row[17]    
+          DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), hasc from tmp_countries where gid=#{row[0]}"
+          region = country.regions.find_by_name_insensitive row[3]
+          region.name = region.name.titleize
           region.save!
         end
       end
 
-      results = DB.select_rows "SELECT * from tmp_countries where name_1 != '.' and name_2 != '.'"
-      results.each do |row|
-        country = Country.find_by_name row[16]
-        if country.nil?
-          country = Country.create!(:name => row[16], :code => row[2], :iso3_code => row[2])
-        end
+      p "Level 1 Complete"
 
-        parent_region = country.regions.find_by_name row[17] 
-        if parent_region.nil?
-          parent_region = Region.create!(:name => row[17], :country_id => country.id)
-        end
+      GC.start
 
-        region = Region.where(:name => row[18], :parent_region_id => parent_region.id, :country_id => country.id).first 
-        if region.nil?
-          DB.execute "INSERT INTO regions(country_id, parent_region_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, #{parent_region.id}, 2, name2, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), first_hasc from tmp_countries where gid=#{row[0]}"
-          region = Region.where(:name => row[18], :parent_region_id => parent_region.id, :country_id => country.id).first 
-          region.save!
+      i = 0
+      results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 != '.' limit 100 offset #{i}"
+      while results.count > 0
+
+        results.each do |row|
+          country = countries[ row[2].titleize ] 
+          country = Country.find_by_name_insensitive row[2] if country.nil?
+          if country.nil?
+            country = Country.create!(:name => row[2].titleize, :code => row[8], :iso3_code => row[8])
+          else
+            # country.update_attributes(:name => row[2].titleize, :code => row[8], :iso3_code => row[8])
+            DB.execute( "UPDATE countries set iso3_code='#{row[8]}' where id=#{country.id} ")
+          end
+          countries[ country.name ] = country if countries[ country.name ].nil?
+
+          parent_region = country.regions.find_by_name_insensitive row[3]
+          if parent_region.nil?
+            parent_region = Region.create!(:name => row[3].titleize, :country_id => country.id, :level => 1)
+          end
+
+          region = Region.where(:parent_region_id => parent_region.id, :country_id => country.id).find_by_name_insensitive( row[4] )
+          if region.nil?
+            DB.execute "INSERT INTO regions(country_id, parent_region_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson, code ) SELECT #{country.id}, #{parent_region.id}, 2, name2, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6), hasc from tmp_countries where gid=#{row[0]}"
+            region = Region.where(:name => row[4], :parent_region_id => parent_region.id, :country_id => country.id).first 
+            region.name = region.name.titleize
+            region.save!
+          end
         end
+        i += 100
+        results = DB.select_rows "SELECT * from tmp_countries where name1 != '.' and name2 != '.' limit 100 offset #{i}"
+        GC.start
       end
 
+      p "Level 2 Complete"
 
       DB.execute 'DROP TABLE tmp_countries'
+    end
+
+    def load_project_files( csv_projs )
+      csv_projs.each do |row|
+        begin
+          o = Organization.find_by_name row.organization
+          if o.nil?
+            o = Organization.create!( :name => row.organization )
+          end
+
+          p = o.projects.where(:name => row.project_name, :intervention_id => row.org_intervention_id).first
+          if p.nil?
+            p = Project.create({
+              :primary_organization_id  => o.id,
+              :intervention_id          => row.org_intervention_id,
+              :name                     => row.project_name.present? ? row.project_name.gsub(/\|/, ", ") : nil,
+              :description              => row.project_description,
+              :additional_information   => row.additional_information,
+              :budget                   => row.budget_numeric,
+              :partner_organizations    => row.local_partners,
+              :estimated_people_reached => row.estimated_people_reached
+            })
+
+            # verbatim locations
+
+            if row.start_date.blank?
+              p.start_date = Time.now - 1.year
+            else
+              begin
+                p.start_date = Date.strptime( row.start_date, '%m/%d/%Y' )
+              rescue
+                p.start_date = nil
+              end
+            end
+
+            if row.end_date.blank?
+              p.end_date = Time.now + 1.year
+            else
+              begin
+                p.end_date = Date.strptime( row.end_date, '%m/%d/%Y' )
+              rescue
+                p.end_date = nil
+              end
+            end
+
+            unless row.location.blank?
+              row.location.split("|").map(&:strip).each do |loc|
+                loc_array = loc.split(">").map(&:strip)
+
+                if loc_array[0].present?
+                  c = Country.find_by_name loc_array[0]
+                  next if c.nil?
+                  p.countries << c
+
+                  if loc_array[1].present?
+                    r = c.regions.find_by_name loc_array[1]
+                    next if r.nil?
+                    p.regions << r
+
+                    if loc_array[2].present?
+                      r2 = Region.where(:country_id => c.id, :parent_region_id => r.id).first
+                      next if r2.nil?
+                      p.regions << r2
+                    end
+                  end
+                end
+
+              end
+            end
+
+            unless row.sectors.blank?
+              row.sectors.split("|").map(&:strip).each do |sec|
+                sect = Sector.find_by_name sec
+                if sect.nil?
+                  sect = Sector.create(:name => sec)
+                end
+                p.sectors << sect
+              end
+            end
+
+            unless row.target_groups.blank?
+              row.target_groups.split("|").map(&:strip).each do |aud|
+                a = Audience.find_by_name aud
+                if a.nil?
+                  a = Audience.create(:name => aud)
+                end
+                p.audiences << a
+              end
+            end
+
+            unless row.activities.blank?
+              row.activities.split("|").map(&:strip).each do |aud|
+                a = Activity.find_by_name aud
+                if a.nil?
+                  a = Activity.create(:name => aud)
+                end
+                p.activities << a
+              end
+            end
+
+            unless row.diseases.blank?
+              row.diseases.split("|").map(&:strip).each do |aud|
+                a = Disease.find_by_name aud
+                if a.nil?
+                  a = Disease.create(:name => aud)
+                end
+                p.diseases << a
+              end
+            end
+
+            unless row.medicine.blank?
+              row.medicine.split("|").map(&:strip).each do |aud|
+                a = Medicine.find_by_name aud
+                if a.nil?
+                  a = Medicine.create(:name => aud)
+                end
+                p.medicines << a
+              end
+            end
+
+
+            unless row.donors.blank?
+              row.donors.split("|").map(&:strip).each do |don|
+                donor = Donor.where("name ilike ?",don).first
+                if donor.nil?
+                  donor = Donor.create!(:name => don)
+                end
+                p.donations << Donation.new( :project => p, :donor => donor)
+              end
+            end
+
+            p.save!
+
+          end
+        rescue
+          nil
+        end
+      end
     end
 
 
     desc "load all available regions not imported already"
     task :load_vitamin => :environment do    
+
 
       unless File.exists? "#{Rails.root}/db/data/VitaminAngelsMappingData.csv"
         open("#{Rails.root}/db/data/VitaminAngelsMappingData.csv", "wb") do |file|
@@ -143,117 +421,45 @@ namespace :iom do
         read_attributes_from_file
       end
 
-      csv_projs.each do |row|
-        o = Organization.find_by_name row.organization
-        if o.nil?
-          o = Organization.create!( :name => row.organization )
-        end
+      p "VitaminAngelsMappingData.csv loaded"
 
-        p = o.projects.find_by_name row.project_name
-        if p.nil?
-          p = Project.create({
-            :primary_organization_id  => o.id,
-            :intervention_id          => row.org_intervention_id,
-            :name                     => row.project_name.present? ? row.project_name.gsub(/\|/, ", ") : nil,
-            :description              => row.project_description,
-            :additional_information   => row.additional_information,
-            :budget                   => row.budget_numeric,
-            :partner_organizations    => row.local_partners,
-            :estimated_people_reached => row.estimated_people_reached
-          })
+      load_project_files( csv_projs )
 
-          # verbatim locations
+      GC.start
 
-          if row.start_date.blank?
-            p.start_date = Time.now - 1.year
-          else
-            begin
-              p.start_date = Date.strptime( row.start_date, '%m/%d/%Y' )
-            rescue
-              p.start_date = nil
-            end
+      unless File.exists? "#{Rails.root}/db/data/VAAmericas.csv"
+        open("#{Rails.root}/db/data/VAAmericas.csv", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/VAAmericas.csv") do |uri|
+             file.write(uri.read)
           end
-
-          if row.end_date.blank?
-            p.end_date = Time.now + 1.year
-          else
-            begin
-              p.end_date = Date.strptime( row.end_date, '%m/%d/%Y' )
-            rescue
-              p.end_date = nil
-            end
-          end
-
-          unless row.location.blank?
-            row.location.split("|").map(&:strip).each do |loc|
-              loc_array = loc.split(">").map(&:strip)
-
-              if loc_array[0].present?
-                c = Country.find_by_name loc_array[0]
-                next if c.nil?
-                p.countries << c
-
-                if loc_array[1].present?
-                  r = c.regions.find_by_name loc_array[1]
-                  next if r.nil?
-                  p.regions << r
-
-                  if loc_array[2].present?
-                    r2 = Region.where(:country_id => c.id, :parent_region_id => r.id).first
-                    next if r2.nil?
-                    p.regions << r2
-                  end
-                end
-              end
-
-            end
-          end
-
-          unless row.sectors.blank?
-            row.sectors.split("|").map(&:strip).each do |sec|
-              sect = Sector.find_by_name sec
-              if sect.nil?
-                sect = Sector.create(:name => sec)
-              end
-              p.sectors << sect
-            end
-          end
-
-          unless row.target_groups.blank?
-            row.target_groups.split("|").map(&:strip).each do |aud|
-              a = Audience.find_by_name aud
-              if a.nil?
-                a = Audience.create(:name => aud)
-              end
-              p.audiences << a
-            end
-          end
-
-          unless row.activities.blank?
-            row.activities.split("|").map(&:strip).each do |aud|
-              a = Activity.find_by_name aud
-              if a.nil?
-                a = Activity.create(:name => aud)
-              end
-              p.activities << a
-            end
-          end
-
-
-          unless row.donors.blank?
-            row.donors.split("|").map(&:strip).each do |don|
-              donor = Donor.where("name ilike ?",don).first
-              if donor.nil?
-                donor = Donor.create!(:name => don)
-              end
-              p.donations << Donation.new( :project => p, :donor => donor)
-            end
-          end
-
-          p.save!
-
         end
       end
+
+      csv_projs = CsvMapper.import("#{Rails.root}/db/data/VAAmericas.csv") do
+        read_attributes_from_file
+      end
+
+      p "VAAmericas.csv loaded"
+
+      load_project_files( csv_projs )
+
+      GC.start
+
+      unless File.exists? "#{Rails.root}/db/data/VAIndia.csv"
+        open("#{Rails.root}/db/data/VAIndia.csv", "wb") do |file|
+          open("https://s3.amazonaws.com/filehost/VAIndia.csv") do |uri|
+             file.write(uri.read)
+          end
+        end
+      end
+
+      csv_projs = CsvMapper.import("#{Rails.root}/db/data/VAIndia.csv") do
+        read_attributes_from_file
+      end
+
+      p "VAIndia.csv loaded"
+
+      load_project_files( csv_projs )
 
     end
 

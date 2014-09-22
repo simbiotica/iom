@@ -31,9 +31,24 @@ NGOAIDMAP is a Ruby on Rails application. The dependencies are:
  * edit config/database.yml
  * ```cp config/app_config.yml.sample config/app_config.yml```
  * edit config/app_config.yml if necessary
- * ```rake db:iom_reset```
  * ```npm install```
  * ```bower install```
+
+## Database Seeding
+
+This is a big thing to do.  It'll take some time to fully seed. Some of the tasks are large and we have to make certain concessions thanks to the old version of Ruby/Rails.  Here's the process:
+
+Run the following commands in order as written.  Don't combine them unless already combined.  If you're running them on Heroku, make sure to run them all with a PX-sized instance.
+
+  * rake db:drop db:create iom:postgis_init db:migrate  
+  * rake iom:data:load_regions_0
+  * rake iom:data:load_regions_1
+  * rake iom:data:load_regions_2
+  * rake db:seed
+  * rake iom:data:load_vitamin
+
+The iom:data tasks will typically take between 10 minutes and 1 hour to complete (depends on the environment).  Brace yourself appropriately for the length of time required.
+
 
 ### Install Errors
 

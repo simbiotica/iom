@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140911230905) do
+ActiveRecord::Schema.define(:version => 20140919032725) do
 
   create_table "activities", :force => true do |t|
     t.string   "name"
@@ -65,6 +65,7 @@ ActiveRecord::Schema.define(:version => 20140911230905) do
     t.text    "the_geom_geojson"
   end
 
+  add_index "countries", ["name"], :name => "index_countries_on_name"
   add_index "countries", ["the_geom"], :name => "index_countries_on_the_geom", :spatial => true
 
   create_table "countries_projects", :id => false, :force => true do |t|
@@ -103,6 +104,20 @@ ActiveRecord::Schema.define(:version => 20140911230905) do
   add_index "data_denormalization", ["project_id"], :name => "index_data_denormalization_on_project_id"
   add_index "data_denormalization", ["project_name"], :name => "index_data_denormalization_on_project_name"
   add_index "data_denormalization", ["site_id"], :name => "index_data_denormalization_on_site_id"
+
+  create_table "diseases", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "diseases_projects", :id => false, :force => true do |t|
+    t.integer "disease_id"
+    t.integer "project_id"
+  end
+
+  add_index "diseases_projects", ["disease_id"], :name => "index_diseases_projects_on_disease_id"
+  add_index "diseases_projects", ["project_id"], :name => "index_diseases_projects_on_project_id"
 
   create_table "donations", :force => true do |t|
     t.integer "donor_id"
@@ -176,6 +191,20 @@ ActiveRecord::Schema.define(:version => 20140911230905) do
   end
 
   add_index "media_resources", ["element_type", "element_id"], :name => "index_media_resources_on_element_type_and_element_id"
+
+  create_table "medicines", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "medicines_projects", :id => false, :force => true do |t|
+    t.integer "medicine_id"
+    t.integer "project_id"
+  end
+
+  add_index "medicines_projects", ["medicine_id"], :name => "index_medicines_projects_on_medicine_id"
+  add_index "medicines_projects", ["project_id"], :name => "index_medicines_projects_on_project_id"
 
   create_table "offices", :force => true do |t|
     t.integer  "donor_id"
@@ -396,6 +425,7 @@ ActiveRecord::Schema.define(:version => 20140911230905) do
 
   add_index "regions", ["country_id"], :name => "index_regions_on_country_id"
   add_index "regions", ["level"], :name => "index_regions_on_level"
+  add_index "regions", ["name"], :name => "index_regions_on_name"
   add_index "regions", ["parent_region_id"], :name => "index_regions_on_parent_region_id"
   add_index "regions", ["the_geom"], :name => "index_regions_on_the_geom", :spatial => true
 

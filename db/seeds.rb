@@ -551,11 +551,98 @@ global_site.update_attributes(
 #
 ####################################################################
 
-Sector.find_or_create_by_name :name => 'Energy'
-Sector.find_or_create_by_name :name => 'Humanitarian aid'
-Sector.find_or_create_by_name :name => 'Mining and extractive resources'
-Sector.find_or_create_by_name :name => 'Non-food relief items (NFIs)'
-Sector.find_or_create_by_name :name => 'Safety nets'
+Sector.find_or_create_by_name :name => 'Neglected Tropical Diseases (NTDs)'
+Sector.find_or_create_by_name :name => 'Water, Sanitation, Hygiene (WASH)'
+Sector.find_or_create_by_name :name => 'Education'
+Sector.find_or_create_by_name :name => 'Nutrition'
+Sector.find_or_create_by_name :name => 'Agriculture'
+Sector.find_or_create_by_name :name => 'Immunization'
+
+
+####################################################################
+#
+# Medicines
+#
+####################################################################
+
+Medicine.find_or_create_by_name :name => 'Albendazole'
+Medicine.find_or_create_by_name :name => 'Mebendazole'
+Medicine.find_or_create_by_name :name => 'Ivermectin (Mectizan)'
+Medicine.find_or_create_by_name :name => 'Diethylcarbamazine citrate (DEC)'
+Medicine.find_or_create_by_name :name => 'Azithromycin'
+Medicine.find_or_create_by_name :name => 'Praziquantel'
+
+####################################################################
+#
+# Diseases
+#
+####################################################################
+
+Disease.find_or_create_by_name :name => 'Soil-transmitted helminthiasis'
+Disease.find_or_create_by_name :name => 'Lymphatic filariasis'
+Disease.find_or_create_by_name :name => 'Trachoma'
+Disease.find_or_create_by_name :name => 'Schistosomiasis'
+Disease.find_or_create_by_name :name => 'Onchocerciasis'
+Disease.find_or_create_by_name :name => 'Dengue'
+Disease.find_or_create_by_name :name => 'Rabies'
+Disease.find_or_create_by_name :name => 'Chagas'
+Disease.find_or_create_by_name :name => 'Leishmaniasis'
+Disease.find_or_create_by_name :name => 'Buruli ulcer'
+Disease.find_or_create_by_name :name => 'Leprosy'
+Disease.find_or_create_by_name :name => 'Yaws'
+Disease.find_or_create_by_name :name => 'Echinococcosis'
+Disease.find_or_create_by_name :name => 'African trypanosomiasis'
+Disease.find_or_create_by_name :name => 'Cysticercosis / taeniasis'
+Disease.find_or_create_by_name :name => 'Guinea worm disease'
+Disease.find_or_create_by_name :name => 'Foodborne trematodiasis'
+Disease.find_or_create_by_name :name => 'HIV / AIDS'
+Disease.find_or_create_by_name :name => 'Tuberculosis'
+Disease.find_or_create_by_name :name => 'Malaria'
+Disease.find_or_create_by_name :name => 'Anemia'
+Disease.find_or_create_by_name :name => 'Vitamin A deficiency'
+Disease.find_or_create_by_name :name => 'Malnutrition'
+
+####################################################################
+#
+# Activities
+#
+####################################################################
+
+Activity.find_or_create_by_name :name => 'Drug treatment (including preventive chemotherapy)'
+Activity.find_or_create_by_name :name => 'Water intervention'
+Activity.find_or_create_by_name :name => 'Sanitation intervention'
+Activity.find_or_create_by_name :name => 'Hygiene education'
+Activity.find_or_create_by_name :name => 'Vitamin A distribution'
+Activity.find_or_create_by_name :name => 'Iron / folic acid distribution'
+Activity.find_or_create_by_name :name => 'Other micronutrient supplementation'
+Activity.find_or_create_by_name :name => 'Surgery'
+Activity.find_or_create_by_name :name => 'Immunization'
+Activity.find_or_create_by_name :name => 'Logistics / Supply Chain'
+Activity.find_or_create_by_name :name => 'Research'
+Activity.find_or_create_by_name :name => 'Advocacy'
+Activity.find_or_create_by_name :name => 'Monitoring / Evaluation'
+Activity.find_or_create_by_name :name => 'Technical Support'
+Activity.find_or_create_by_name :name => 'Capacity Building / Training'
+Activity.find_or_create_by_name :name => 'Other'
+
+
+####################################################################
+#
+# Audience
+#
+####################################################################
+
+Audience.find_or_create_by_name :name => 'Infants'
+Audience.find_or_create_by_name :name => 'Pre-school children'
+Audience.find_or_create_by_name :name => 'School-age children'
+Audience.find_or_create_by_name :name => 'Women of reproductive age'
+Audience.find_or_create_by_name :name => 'Pregnant women'
+Audience.find_or_create_by_name :name => 'Adult men'
+Audience.find_or_create_by_name :name => 'Health workers'
+Audience.find_or_create_by_name :name => 'Academia'
+Audience.find_or_create_by_name :name => 'Policymakers'
+Audience.find_or_create_by_name :name => 'Donors'
+
 
 
 ####################################################################

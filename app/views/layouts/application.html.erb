@@ -27,8 +27,6 @@
     <% if logged_in? %>
         <div class="mod-backoffice-menu">
 
-          <a href="<%= admin_admin_path %>" class="interaction-logo"><%= image_tag "interaction-white.svg", :alt  => "interaction logo", :height => '98', :width => '150' %></a>
-
           <ul class="admin-menu">
             <% if current_user.admin? -%>
               <li><%= link_to('settings', edit_admin_setting_path(Settings.first)) %></li>
@@ -71,9 +69,6 @@
     <% if logged_in? %>
       <div class="mod-backoffice-footer">
         <div class="inner_footer">
-          <a class="logo" href="<%= admin_admin_path %>" target="_blank">
-            <%= image_tag "interaction-white.svg", :alt  => "interaction logo", :height => '65', :width => '100' %>
-          </a>
           <ul>
             <li class="last"><a href="/">ngoaidmap</a></li>
           </ul>

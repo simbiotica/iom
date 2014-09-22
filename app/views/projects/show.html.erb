@@ -232,6 +232,32 @@
             </section>
           <% end %>
 
+          <% if @project.diseases.present? %>
+            <section>
+              <%unless @project.diseases.empty? %>
+                <h2>Diseases</h2>
+                <ul>
+                  <% @project.diseases.each do |disease| %>
+                    <li><%=disease.name %> </li>
+                  <% end %>
+                </ul>
+              <%end%>
+            </section>
+          <% end %>
+
+          <% if @project.medicines.present? %>
+            <section>
+              <%unless @project.medicines.empty? %>
+                <h2>Medicines</h2>
+                <ul>
+                  <% @project.medicines.each do |medicine| %>
+                    <li><%=medicine.name %> </li>
+                  <% end %>
+                </ul>
+              <%end%>
+            </section>
+          <% end %>
+
           <%= render 'new_partials/more_projects' %>
 
         </div>

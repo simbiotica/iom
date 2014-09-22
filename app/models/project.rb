@@ -44,6 +44,8 @@ class Project < ActiveRecord::Base
   has_and_belongs_to_many :sectors
   has_and_belongs_to_many :audiences, :join_table => "projects_audiences"
   has_and_belongs_to_many :activities, :join_table => "projects_activities"
+  has_and_belongs_to_many :diseases, :join_table => "diseases_projects"
+  has_and_belongs_to_many :medicines, :join_table => "medicines_projects"
   has_and_belongs_to_many :regions, :after_add => :add_to_country, :after_remove => :remove_from_country
   has_and_belongs_to_many :countries
   has_and_belongs_to_many :tags, :after_add => :update_tag_counter, :after_remove => :update_tag_counter
