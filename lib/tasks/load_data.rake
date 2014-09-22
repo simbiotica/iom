@@ -140,11 +140,13 @@ namespace :iom do
             country = Country.create!( :name => row[1].titleize )
           end
 
+          next if row[2].nil?
+
           region = country.regions.find_by_name_insensitive row[2]        
           if region.nil?
             DB.execute "INSERT INTO regions(country_id, level, name, center_lat, center_lon, the_geom, the_geom_geojson ) SELECT #{country.id}, 1, name1, st_y( ST_Centroid(the_geom) ), st_x( ST_Centroid(the_geom) ), the_geom, ST_AsGeoJSON(the_geom,6) from tmp_countries where gid=#{row[0]}"
             region = country.regions.find_by_name row[2]
-            region.name = row[2].titleize
+            region.name = region.name.titleize
             region.save!
           end
         end
