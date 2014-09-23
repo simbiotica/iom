@@ -39,7 +39,7 @@ namespace :iom do
     task :all => %w(load_adm_levels load_orgs load_projects)
 
     desc "load world data"
-    task :world => %w(load_countries load_regions)
+    task :world => %w(load_countries load_regions_0 load_regions_1 load_regions_2)
 
     desc "load country data"
     task :load_countries => :environment do
