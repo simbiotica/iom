@@ -216,8 +216,13 @@ class GeoregionController < ApplicationController
         @projects_for_kml = Project.to_kml(@site, projects_custom_find_options)
       end
       format.json do
-        @projects_for_geojson = Project.to_geoson(@site, projects_custom_find_options)
+        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
+          { projectName: p['project_name'],
+            geoJSON: p['geojson']
+          }
+        end
       end
+      
     end
   end
 

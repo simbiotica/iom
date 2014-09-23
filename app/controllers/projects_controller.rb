@@ -76,7 +76,11 @@ class ProjectsController < ApplicationController
       end
       format.kml
       format.json do
-        @projects_for_geojson = Project.to_geoson(@site, :project => @project.id)
+        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
+          { projectName: p['project_name'],
+            geoJSON: p['geojson']
+          }
+        end
       end
       format.csv do
         send_data Project.to_csv(@site, :project => @project.id),
