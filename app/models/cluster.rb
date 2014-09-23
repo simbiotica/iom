@@ -100,7 +100,7 @@ SQL
     inner join projects as p on p.id=cp.project_id and (p.end_date is null OR p.end_date > now())
     inner join projects_sites as psi on p.id=psi.project_id and psi.site_id=#{site.id}
     where cp.cluster_id=#{self.id}"
-    ActiveRecord::Base.connection.execute(sql).first['count'].to_i
+    ActiveRecord::Base.connection.execute(sql)
   end
 
   def projects_for_kml(site)
@@ -109,7 +109,7 @@ SQL
     inner join projects as p on p.id=cp.project_id and (p.end_date is null OR p.end_date > now())
     inner join projects_sites as psi on p.id=psi.project_id and psi.site_id=#{site.id}
     where cp.cluster_id=#{self.id}"
-    ActiveRecord::Base.connection.execute(sql).first['count'].to_i
+    ActiveRecord::Base.connection.execute(sql)
   end
 
   def projects_for_geojson(site)
@@ -118,7 +118,7 @@ SQL
     inner join projects as p on p.id=cp.project_id and (p.end_date is null OR p.end_date > now())
     inner join projects_sites as psi on p.id=psi.project_id and psi.site_id=#{site.id}
     where cp.cluster_id=#{self.id}"
-    ActiveRecord::Base.connection.execute(sql).first['count'].to_i
+    ActiveRecord::Base.connection.execute(sql)
   end
 
   # to get only id and name
