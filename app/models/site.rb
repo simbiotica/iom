@@ -688,7 +688,7 @@ SQL
     ActiveRecord::Base.connection.execute(sql)
     #Work on the denormalization
 
-    sql="insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,donors_ids,is_active,site_id,created_at)
+    sql="insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,donors_ids,activities,activities_ids,audiences,audiences_ids,diseases,diseases_ids,is_active,site_id,created_at)
     select  * from
            (SELECT p.id as project_id, p.name as project_name, p.description as project_description,
            o.id as organization_id, o.name as organization_name,
@@ -703,6 +703,13 @@ SQL
            '|'||array_to_string(array_agg(distinct clus.name),'|')||'|' as clusters,
            ('{'||array_to_string(array_agg(distinct clus.id),',')||'}')::integer[] as cluster_ids,
            ('{'||array_to_string(array_agg(distinct d.donor_id),',')||'}')::integer[] as donors_ids,
+           '|'||array_to_string(array_agg(distinct act.name),'|')||'|' as activities,
+           ('{'||array_to_string(array_agg(distinct act.id),',')||'}')::integer[] as activities_ids,
+           '|'||array_to_string(array_agg(distinct aud.name),'|')||'|' as audiences,
+           ('{'||array_to_string(array_agg(distinct aud.id),',')||'}')::integer[] as audiences_ids,
+           '|'||array_to_string(array_agg(distinct dis.name),'|')||'|' as diseases,
+           ('{'||array_to_string(array_agg(distinct dis.id),',')||'}')::integer[] as diseases_ids,
+     
            CASE WHEN end_date is null OR p.end_date > now() THEN true ELSE false END AS is_active,
            ps.site_id,p.created_at
            FROM projects as p
@@ -717,6 +724,13 @@ SQL
            LEFT JOIN projects_sectors as psec ON psec.project_id=p.id
            LEFT JOIN sectors as sec ON sec.id=psec.sector_id
            LEFT JOIN donations as d ON d.project_id=ps.project_id
+           LEFT JOIN projects_activities as actpro ON actpro.project_id=p.id          
+           LEFT JOIN activities as act ON act.id=actpro.activity_id
+           LEFT JOIN projects_audiences as audpro ON audpro.project_id=p.id
+           LEFT JOIN audiences as aud ON aud.id=audpro.audience_id
+           LEFT JOIN diseases_projects as dispro on dispro.project_id=p.id
+           LEFT JOIN diseases as dis ON dis.id=dispro.disease_id
+            
            where site_id=#{self.id}
            GROUP BY p.id,p.name,o.id,o.name,p.description,p.start_date,p.end_date,ps.site_id,p.created_at) as subq"
      ActiveRecord::Base.connection.execute(sql)
@@ -726,7 +740,7 @@ SQL
            sql_for_orphan_projects = """
         insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,
         start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,
-        donors_ids,is_active,created_at)
+        activities,activities_ids,audiences,audiences_ids,diseases,diseases_ids,donors_ids,is_active,created_at)
         select  * from
           (SELECT p.id as project_id, p.name as project_name, p.description as project_description,
                 o.id as organization_id, o.name as organization_name,
@@ -741,6 +755,13 @@ SQL
                 '|'||array_to_string(array_agg(distinct clus.name),'|')||'|' as clusters,
                 ('{'||array_to_string(array_agg(distinct clus.id),',')||'}')::integer[] as cluster_ids,
                 ('{'||array_to_string(array_agg(distinct d.donor_id),',')||'}')::integer[] as donors_ids,
+                '|'||array_to_string(array_agg(distinct act.name),'|')||'|' as activities,
+                ('{'||array_to_string(array_agg(distinct act.id),',')||'}')::integer[] as activities_ids,
+                '|'||array_to_string(array_agg(distinct aud.name),'|')||'|' as audiences,
+                ('{'||array_to_string(array_agg(distinct aud.id),',')||'}')::integer[] as audiences_ids,
+                '|'||array_to_string(array_agg(distinct dis.name),'|')||'|' as diseases,
+                ('{'||array_to_string(array_agg(distinct dis.id),',')||'}')::integer[] as diseases_ids,
+
                 CASE WHEN end_date is null OR p.end_date > now() THEN true ELSE false END AS is_active,
                 p.created_at
                 FROM projects as p
@@ -754,6 +775,13 @@ SQL
                 LEFT JOIN projects_sectors as psec ON psec.project_id=p.id
                 LEFT JOIN sectors as sec ON sec.id=psec.sector_id
                 LEFT JOIN donations as d ON d.project_id=p.id
+                LEFT JOIN projects_activities as actpro ON actpro.project_id=p.id          
+                LEFT JOIN activities as act ON act.id=actpro.activity_id
+                LEFT JOIN projects_audiences as audpro ON audpro.project_id=p.id
+                LEFT JOIN audiences as aud ON aud.id=audpro.audience_id
+                LEFT JOIN diseases_projects as dispro on dispro.project_id=p.id
+                LEFT JOIN diseases as dis ON dis.id=dispro.disease_id
+
                 where p.id not in (select project_id from projects_sites)
                 GROUP BY p.id,p.name,o.id,o.name,p.description,p.start_date,p.end_date,p.created_at) as subq"""
     ActiveRecord::Base.connection.execute(sql_for_orphan_projects)
