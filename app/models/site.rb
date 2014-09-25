@@ -739,8 +739,8 @@ SQL
            #Those projects not in a site right now also need to be handled for exports
            sql_for_orphan_projects = """
         insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,
-        start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,
-        activities,activities_ids,audiences,audiences_ids,diseases,diseases_ids,donors_ids,is_active,created_at)
+        start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,donors_ids,
+        activities,activities_ids,audiences,audiences_ids,diseases,diseases_ids,is_active,created_at)
         select  * from
           (SELECT p.id as project_id, p.name as project_name, p.description as project_description,
                 o.id as organization_id, o.name as organization_name,

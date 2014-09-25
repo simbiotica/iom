@@ -856,7 +856,7 @@ SQL
                     ('{'||array_to_string(array_agg(distinct clus.id),',')||'}')::integer[] as cluster_ids,
                     ('{'||array_to_string(array_agg(distinct d.donor_id),',')||'}')::integer[] as donors_ids,
                     '|'||array_to_string(array_agg(distinct act.name),'|')||'|' as activities,
-                     ('{'||array_to_string(array_agg(distinct act.id),',')||'}')::integer[] as activities_ids,
+                    ('{'||array_to_string(array_agg(distinct act.id),',')||'}')::integer[] as activities_ids,
                     '|'||array_to_string(array_agg(distinct aud.name),'|')||'|' as audiences,
                     ('{'||array_to_string(array_agg(distinct aud.id),',')||'}')::integer[] as audiences_ids,
                     '|'||array_to_string(array_agg(distinct dis.name),'|')||'|' as diseases,
