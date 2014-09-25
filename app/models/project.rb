@@ -612,6 +612,12 @@ SQL
       end
       where << "donors_ids && '{#{options[:donor_id]}}' and site_id=#{site.id} and (end_date is null OR end_date > now())"
       sql="select * from data_denormalization where #{where.join(' and ')}"
+    elsif options[:activity]
+      sql="select * from data_denormalization where activities_ids && '{#{options[:activity]}}' and site_id=#{site.id} and (end_date is null OR end_date > now())"
+    elsif options[:audience]
+      sql="select * from data_denormalization where activities_ids && '{#{options[:audience]}}' and site_id=#{site.id} and (end_date is null OR end_date > now())"
+    elsif options[:disease]
+      sql="select * from data_denormalization where activities_ids && '{#{options[:disease]}}' and site_id=#{site.id} and (end_date is null OR end_date > now())"
     else
       sql="select * from data_denormalization where site_id=#{site.id} and (end_date is null OR end_date > now())"
     end
