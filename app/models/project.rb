@@ -205,7 +205,7 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def self.list_for_export(site = nil, options = {})
+  def self.list_for_export(site, options)
     where = []
 
     where << "(cp.country_id IS NOT NULL OR pr.region_id IS NOT NULL)"
@@ -297,7 +297,7 @@ class Project < ActiveRecord::Base
     elsif options[:audience]
       where << "pa2.audience_id = #{options[:audience]} and site_id=#{site.id}"
     elsif options[:disease]
-      where << "pd.disease_id = #{options[:disease]} and site_id=#{side.id}"
+      where << "pd.disease_id = #{options[:disease]} and site_id=#{site.id}"
     elsif options[:activity]
       where << "pa.activity_id = #{options[:activity]} and site_id=#{site.id}"
     elsif options[:organization]
@@ -405,7 +405,7 @@ class Project < ActiveRecord::Base
         LEFT OUTER JOIN projects_sectors ps2   ON  ps2.project_id = p.id
         LEFT OUTER JOIN clusters_projects clpr ON  clpr.project_id = p.id
         LEFT OUTER JOIN projects_activities pa ON  pa.project_id = p.id
-        LEFT OUTER JOIN projects_audience pa2  ON  pa2.project_id = p.id
+        LEFT OUTER JOIN projects_audiences pa2  ON  pa2.project_id = p.id
         LEFT OUTER JOIN diseases_projects pd   ON  pd.project_id = p.id
         #{donor_report}
         #{where}
@@ -485,7 +485,7 @@ class Project < ActiveRecord::Base
     projects = self.list_for_export(site, options.merge(:kml => true))
   end
 
-  def self.to_geojson
+  def self.to_geojson(site, options = {})
     projects = self.list_for_export(site, options.merge(:geojson => true))
   end
 
