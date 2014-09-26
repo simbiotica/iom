@@ -833,9 +833,9 @@ SQL
                LEFT JOIN projects_activities as actpro ON actpro.project_id=p.id
                LEFT JOIN activities as act ON act.id=actpro.activity_id
                LEFT JOIN projects_audiences as audpro ON audpro.project_id=p.id
-               LEFT JOIN audiences as aud ON aud.id=audpro.cluster_id
+               LEFT JOIN audiences as aud ON aud.id=audpro.audience_id
                LEFT JOIN diseases_projects as dispro ON dispro.project_id=p.id
-               LEFT JOIN diseases as dis ON dis.id=dispro.cluster_id
+               LEFT JOIN diseases as dis ON dis.id=dispro.disease_id
 
                where site_id=#{site.id} AND p.id=#{self.id}
                GROUP BY p.id,p.name,o.id,o.name,p.description,p.end_date,ps.site_id,p.created_at) as subq"
@@ -846,7 +846,7 @@ SQL
          sql_for_orphan_projects = """
             insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,
             start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,
-            activities,activities_ids,audiences,audiences_ids,diseases,diseases_ids,donors_ids,is_active,created_at)
+            donors_ids,activities,activities_ids,audiences,audiences_ids,diseases,diseases_ids,is_active,created_at)
             select  * from
               (SELECT p.id as project_id, p.name as project_name, p.description as project_description,
                     o.id as organization_id, o.name as organization_name,
@@ -884,9 +884,9 @@ SQL
                     LEFT JOIN projects_activities as actpro ON actpro.project_id=p.id
                     LEFT JOIN activities as act ON act.id=actpro.activity_id
                     LEFT JOIN projects_audiences as audpro ON audpro.project_id=p.id
-                    LEFT JOIN audiences as aud ON aud.id=audpro.cluster_id
+                    LEFT JOIN audiences as aud ON aud.id=audpro.audience_id
                     LEFT JOIN diseases_projects as dispro ON dispro.project_id=p.id
-                    LEFT JOIN diseases as dis ON dis.id=dispro.cluster_id
+                    LEFT JOIN diseases as dis ON dis.id=dispro.disease_id
 
                     where p.id not in (select project_id from projects_sites)
                     GROUP BY p.id,p.name,o.id,o.name,p.description,p.start_date,p.end_date,p.created_at) as subq"""
