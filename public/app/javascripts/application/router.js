@@ -42,6 +42,8 @@ define([
       'activities/:id/*params': 'lists',
       'audience/:id': 'lists',
       'audience/:id/*params': 'lists',
+      'diseases/:id': 'lists',
+      'diseases/:id/*params': 'lists',
       'location/:id': 'lists',
       'location/:id/*params': 'lists',
       'projects/:id': 'project',
