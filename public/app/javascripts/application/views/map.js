@@ -1,7 +1,7 @@
 /*global google,map_type,map_data:true,map_center,kind,map_zoom,MAP_EMBED,show_regions_with_one_project,max_count,empty_layer,globalPage,page*/
 'use strict';
 
-define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
+define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, Backbone, Pluralize) {
 
   var stylesArray = [{
     'featureType': 'landscape.natural',
@@ -215,11 +215,18 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
             top_hidden.className = 'map-top-tooltip';
 
             if (this.total_in_region && $('body').hasClass('organizations-page')) {
-              $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ((this.count > 1) ? ' projects by this ' + kind.slice(0, -1) : ' project by this ' + kind.slice(0, -1)) + '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
+                                   Pluralize.inflectForCount('project', this.count) + ' by this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
             } else if (this.total_in_region) {
-              $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ((this.count > 1) ? ' projects in this ' + kind.slice(0, -1) : ' project in this ' + kind.slice(0, -1)) + '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
+                
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
+                                   Pluralize.inflectForCount('project', this.count) + ' in this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
             } else {
-              $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ((this.count > 1) ? ' projects' : ' project') + '</strong>');
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
+                                   Pluralize.inflectForCount('project', this.count) +
+                                   '</strong>');
             }
 
             hidden_div.appendChild(top_hidden);
