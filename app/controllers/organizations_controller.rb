@@ -85,7 +85,7 @@ class OrganizationsController < ApplicationController
     end
 
     respond_to do |format|
-      format.html do
+      format.json do
 
         if @filter_by_category.present?
           if @site.navigate_by_cluster?
@@ -236,6 +236,8 @@ class OrganizationsController < ApplicationController
         end
         @chld = ""
         @chd = ""
+
+        render :json => @map_data
       end
       format.js do
         render :update do |page|
@@ -259,11 +261,11 @@ class OrganizationsController < ApplicationController
         @projects_for_kml = Project.to_kml(@site, projects_custom_find_options)
       end
       format.json do
-        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
-          { projectName: p['project_name'],
-            geoJSON: p['geojson']
-          }
-        end
+#        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
+#          { projectName: p['project_name'],
+#            geoJSON: p['geojson']
+#          }
+#        end
       end
 
     end

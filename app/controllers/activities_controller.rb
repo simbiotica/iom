@@ -54,7 +54,6 @@ class ActivitiesController < ApplicationController
 
     respond_to do |format|
       format.html do
-
         
         carry_on_url = activity_path(@data, @carry_on_filters.merge(:location_id => ''))
         if @site.geographic_context_country_id
@@ -67,10 +66,11 @@ class ActivitiesController < ApplicationController
                 inner join projects_regions as pr on r.id=pr.region_id and r.level=#{@site.level_for_region}
                 inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{@site.id}
                 inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
-                inner join projects_activities as pa on pa.project_id=p.id and pa.activity_id=#{params[:id].sanitize_sql!.to_i}
+                left outer join projects_activities as pa on pa.project_id=p.id and pa.activity_id=#{params[:id].sanitize_sql!.to_i}
                 #{location_filter}
                 group by r.id,r.name,lon,lat,r.name,url,r.code"
         else
+
           location_filter = "where c.id = #{@filter_by_location.first}" if @filter_by_location
           sql="select c.id,c.name,count(ps.*) as count,c.center_lon as lon,c.center_lat as lat,c.name,'#{carry_on_url}'||c.id as url,c.code,
                 (select count(*) from data_denormalization where countries_ids && ('{'||c.id||'}')::integer[] and (end_date is null OR end_date > now()) and site_id=#{@site.id}) as total_in_region
@@ -78,7 +78,7 @@ class ActivitiesController < ApplicationController
                   inner join countries_projects as cp on c.id=cp.country_id
                   inner join projects_sites as ps on cp.project_id=ps.project_id and ps.site_id=#{@site.id}
                   inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
-                  inner join projects_activities as pa on pa.project_id=p.id and pa.activity_id=#{params[:id].sanitize_sql!.to_i}
+                  left outer join projects_activities as pa on pa.project_id=p.id and pa.activity_id=#{params[:id].sanitize_sql!.to_i}
                   #{location_filter}
                   group by c.id,c.name,lon,lat,c.name,url"
         end
@@ -88,13 +88,14 @@ class ActivitiesController < ApplicationController
         result = ActiveRecord::Base.connection.execute(sql)
 
         @map_data = result.map do |r|
+          next if r['url'].blank?
           uri = URI.parse(r['url'])
           params = Hash[uri.query.split('&').map{|p| p.split('=')}] rescue {}
           params['force_site_id'] = @site.id unless @site.published?
           uri.query = params.to_a.map{|p| p.join('=')}.join('&')
           r['url'] = uri.to_s
           r
-        end.to_json
+        end.compact.to_json
         @overview_map_chco = @site.theme.data[:overview_map_chco]
         @overview_map_chf = @site.theme.data[:overview_map_chf]
         @overview_map_marker_source = @site.theme.data[:overview_map_marker_source]
@@ -113,7 +114,6 @@ class ActivitiesController < ApplicationController
         # @chld = ""
         @chd  = "t:"+data.join(",")
         # @chd = ""
-
       end
       format.js do
         render :update do |page|
