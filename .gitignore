@@ -9,6 +9,7 @@ db/data/masteradminmap/
 log/*.log
 tmp/**/*
 public/system
+public/dist
 bin/
 install/
 config/app_config.yml
