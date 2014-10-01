@@ -105,7 +105,7 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
       this.latlng_ = new google.maps.LatLng(parseFloat(info.lat), parseFloat(info.lon));
       this.url = info.url;
       this.count = info.count;
-      this.total_in_region = info.total_in_region;
+      this.total_in_region = info.total_in_region || info.count;
       //this.image = image;
 
       this.map_ = map;
@@ -146,9 +146,10 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
         div.style.zIndex = 1;
         div.style.cursor = 'pointer';
 
+        var count;
         try {
           if (show_regions_with_one_project) {
-            var count = document.createElement('p');
+            count = document.createElement('p');
             count.style.position = 'absolute';
             count.style.top = '50%';
             count.style.left = '50%';
@@ -170,12 +171,16 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
               count.style.margin = '-9px 0 0 0px';
               count.style.font = 'normal 18px Arial';
             }
-            $(count).text(this.count);
+            
+            if (this.total_in_region > 1) {
+                $(count).text(this.total_in_region);
+            }
+
             div.appendChild(count);
           }
         } catch (e) {
           if (this.count > 1) {
-            var count = document.createElement('p');
+            count = document.createElement('p');
             count.style.position = 'absolute';
             count.style.top = '50%';
             count.style.left = '50%';
@@ -197,7 +202,11 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
               count.style.margin = '-9px 0 0 0px';
               count.style.font = 'normal 18px Arial';
             }
-            $(count).text(this.count);
+
+            if (this.total_in_region > 1) {
+                $(count).text(this.total_in_region);
+            }
+
             div.appendChild(count);
           }
         }
@@ -215,14 +224,13 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
             top_hidden.className = 'map-top-tooltip';
 
             if (this.total_in_region && $('body').hasClass('organizations-page')) {
-                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
-                                   Pluralize.inflectForCount('project', this.count) + ' by this ' + Pluralize.singularize(kind) +
-                                   '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
+                                   Pluralize.inflectForCount('project', this.total_in_region) + ' by this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + this.count + ' in total</strong>');
             } else if (this.total_in_region) {
-                
-                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
-                                   Pluralize.inflectForCount('project', this.count) + ' in this ' + Pluralize.singularize(kind) +
-                                   '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
+                                   Pluralize.inflectForCount('project', this.total_in_region) + ' in this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + this.count + ' in total</strong>');
             } else {
                 $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
                                    Pluralize.inflectForCount('project', this.count) +
