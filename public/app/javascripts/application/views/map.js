@@ -280,18 +280,18 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
             var top_hidden = document.createElement('div');
             top_hidden.className = 'map-top-tooltip';
 
-            if (this.total_in_region && $('body').hasClass('organizations-page')) {
+            if ($('body').hasClass('organizations-page')) {
                 $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
                                    Pluralize.inflectForCount('project', this.total_in_region) + ' by this ' + Pluralize.singularize(kind) +
                                    '</strong>.<br/><strong>' + this.count + ' in total</strong>');
-            } else if (this.total_in_region) {
-                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
-                                   Pluralize.inflectForCount('project', this.total_in_region) + ' in this ' + Pluralize.singularize(kind) +
-                                   '</strong>.<br/><strong>' + this.count + ' in total</strong>');
-            } else {
+            } else if ($('body').hasClass('sites-page')) {
                 $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
                                    Pluralize.inflectForCount('project', this.count) +
                                    '</strong>');
+            } else {
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
+                                   Pluralize.inflectForCount('project', this.total_in_region) + ' in this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + this.count + ' in total</strong>');
             }
 
             hidden_div.appendChild(top_hidden);
