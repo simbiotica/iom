@@ -384,7 +384,7 @@ class Site < ActiveRecord::Base
   # Array of arrays
   # [[country, count], [country, count]]
   def projects_countries
-    sql="select #{Country.custom_fields.join(',')},count(ps.*) as count from countries
+    sql="select #{Country.custom_fields.join(',')},count(distinct ps.project_id) as count from countries
       inner join countries_projects as pr on pr.country_id=countries.id
       inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{self.id}
       inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
@@ -396,7 +396,7 @@ class Site < ActiveRecord::Base
   # Array of arrays
   # [[organization, count], [organization, count]]
   def projects_organizations
-    sql="select o.id,o.name,count(ps.*) as count from organizations as o
+    sql="select o.id,o.name,count(distinct ps.project_id) as count from organizations as o
       inner join projects as p on o.id=p.primary_organization_id
       inner join projects_sites as ps on p.id=ps.project_id and ps.site_id=#{self.id}
       inner join projects as pr on ps.project_id=pr.id and (pr.end_date is null OR pr.end_date > now())
@@ -412,7 +412,7 @@ class Site < ActiveRecord::Base
   end
 
   def total_projects(options = {})
-    sql = "select count(projects_sites.project_id) as count from projects_sites, projects where projects_sites.site_id = #{self.id}
+    sql = "select count(distinct projects_sites.project_id) as count from projects_sites, projects where projects_sites.site_id = #{self.id}
                   and projects_sites.project_id = projects.id and (projects.end_date is null OR projects.end_date > now())"
     ActiveRecord::Base.connection.execute(sql).first['count'].to_i
   end
