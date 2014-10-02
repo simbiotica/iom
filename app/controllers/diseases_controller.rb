@@ -53,7 +53,7 @@ class DiseasesController < ApplicationController
     end
 
     respond_to do |format|
-      format.html do
+      format.json do
 
         
         carry_on_url = disease_path(@data, @carry_on_filters.merge(:location_id => ''))
@@ -61,24 +61,24 @@ class DiseasesController < ApplicationController
           location_filter = "where r.id = #{@filter_by_location.last}" if @filter_by_location
 
           # Get the data for the map depending on the region definition of the site (country or region)
-          sql="select r.id,r.name,count(ps.*) as count,r.center_lon as lon,r.center_lat as lat,r.name,'#{carry_on_url}'||r.path as url,r.code,
+          sql="select r.id,r.name,count(distinct pa.project_id) as count,r.center_lon as lon,r.center_lat as lat,r.name,'#{carry_on_url}'||r.path as url,r.code,
               (select count(*) from data_denormalization where regions_ids && ('{'||r.id||'}')::integer[] and (end_date is null OR end_date > now()) and site_id=#{@site.id}) as total_in_region
               from regions as r
                 inner join projects_regions as pr on r.id=pr.region_id and r.level=#{@site.level_for_region}
                 inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{@site.id}
                 inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
-                left outer join diseases_projects as pa on pa.project_id=p.id and pa.disease_id=#{params[:id].sanitize_sql!.to_i}
+                inner join diseases_projects as pa on pa.project_id=p.id and pa.disease_id=#{params[:id].sanitize_sql!.to_i}
                 #{location_filter}
                 group by r.id,r.name,lon,lat,r.name,url,r.code"
         else
           location_filter = "where c.id = #{@filter_by_location.first}" if @filter_by_location
-          sql="select c.id,c.name,count(ps.*) as count,c.center_lon as lon,c.center_lat as lat,c.name,'#{carry_on_url}'||c.id as url,c.code,
+          sql="select c.id,c.name,count(distinct pa.project_id) as count,c.center_lon as lon,c.center_lat as lat,c.name,'#{carry_on_url}'||c.id as url,c.code,
                 (select count(*) from data_denormalization where countries_ids && ('{'||c.id||'}')::integer[] and (end_date is null OR end_date > now()) and site_id=#{@site.id}) as total_in_region
                 from countries as c
                   inner join countries_projects as cp on c.id=cp.country_id
                   inner join projects_sites as ps on cp.project_id=ps.project_id and ps.site_id=#{@site.id}
                   inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
-                  left outer join diseases_projects as pa on pa.project_id=p.id and pa.disease_id=#{params[:id].sanitize_sql!.to_i}
+                  inner join diseases_projects as pa on pa.project_id=p.id and pa.disease_id=#{params[:id].sanitize_sql!.to_i}
                   #{location_filter}
                   group by c.id,c.name,lon,lat,c.name,url"
         end
@@ -114,6 +114,7 @@ class DiseasesController < ApplicationController
         @chd  = "t:"+data.join(",")
         # @chd = ""
 
+        render json: @map_data
       end
       format.js do
         render :update do |page|
@@ -137,13 +138,13 @@ class DiseasesController < ApplicationController
       format.kml do
         @projects_for_kml = Project.to_kml(@site, projects_custom_find_options)
       end
-      format.json do
-        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
-          { projectName: p['project_name'],
-            geoJSON: p['geojson']
-          }
-        end
-      end
+#      format.json do
+#        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
+#          { projectName: p['project_name'],
+ #           geoJSON: p['geojson']
+ #         }
+ #       end
+ #     end
 
     end
   end

@@ -84,7 +84,7 @@ class ClustersSectorsController < ApplicationController
             location_filter = "where r.id = #{@filter_by_location.last}" if @filter_by_location
 
             # Get the data for the map depending on the region definition of the site (country or region)
-            sql="select r.id,r.name,count(ps.*) as count,r.center_lon as lon,r.center_lat as lat,r.name,'#{carry_on_url}'||r.path as url,r.code,
+            sql="select r.id,r.name,count(distinct cp.project_id) as count,r.center_lon as lon,r.center_lat as lat,r.name,'#{carry_on_url}'||r.path as url,r.code,
                 (select count(*) from data_denormalization where regions_ids && ('{'||r.id||'}')::integer[] and (end_date is null OR end_date > now()) and site_id=#{@site.id}) as total_in_region
             from regions as r
               inner join projects_regions as pr on r.id=pr.region_id and r.level=#{@site.level_for_region}
@@ -95,7 +95,7 @@ class ClustersSectorsController < ApplicationController
               group by r.id,r.name,lon,lat,r.name,url,r.code"
           else
              location_filter = "where c.id = #{@filter_by_location.first}" if @filter_by_location
-             sql="select c.id,c.name,count(ps.*) as count,c.center_lon as lon,c.center_lat as lat,c.name,'#{carry_on_url}'||c.id as url,
+             sql="select c.id,c.name,count(distinct cp.project_id) as count,c.center_lon as lon,c.center_lat as lat,c.name,'#{carry_on_url}'||c.id as url,
                   (select count(*) from data_denormalization where countries_ids && ('{'||c.id||'}')::integer[] and (end_date is null OR end_date > now()) and site_id=#{@site.id}) as total_in_region
               from countries as c
                 inner join countries_projects as cp on c.id=cp.country_id
@@ -111,8 +111,8 @@ class ClustersSectorsController < ApplicationController
             location_filter = "where r.id = #{@filter_by_location.last}" if @filter_by_location
 
             # Get the data for the map depending on the region definition of the site (country or region)
-            sql="select r.id,r.name,count(ps.*) as count,r.center_lon as lon,r.center_lat as lat,r.name,
-            CASE WHEN count(distinct ps.project_id) > 1 THEN
+            sql="select r.id,r.name,count(distinct cp.project_id) as count,r.center_lon as lon,r.center_lat as lat,r.name,
+            CASE WHEN count(distinct cp.project_id) > 1 THEN
                 '#{carry_on_url}'||r.path
             ELSE
                 '/projects/'||(array_to_string(array_agg(ps.project_id),''))
@@ -135,7 +135,7 @@ class ClustersSectorsController < ApplicationController
               sql = <<-SQL
                 SELECT r.id AS id,
                        r.name as region_name,
-                       count(ps.*) AS count,
+                       count(distinct pse.project_id) AS count,
                        r.center_lon AS lon,
                        r.center_lat AS lat,
                        c.name as country_name,
@@ -157,11 +157,11 @@ class ClustersSectorsController < ApplicationController
                 UNION
                  SELECT c.id as id,
                  c.name as name,
-                 count(ps.*) as count,
+                 count(distinct ps.project_id) as count,
                  c.center_lon as lon,
                  c.center_lat as lat,
                  c.name as country_name,
-                 CASE WHEN count(distinct ps.project_id) > 1 THEN '#{carry_on_url}'||c.id
+                 CASE WHEN count(distinct pse.project_id) > 1 THEN '#{carry_on_url}'||c.id
                  ELSE '/projects/'||(array_to_string(array_agg(ps.project_id),''))
                  END as url,
                  (select count(*) from data_denormalization
@@ -180,7 +180,7 @@ class ClustersSectorsController < ApplicationController
                   GROUP BY c.id, c.name, lon, lat, c.name
               SQL
             else
-              sql="select c.id,c.name,count(ps.*) as count,c.center_lon as lon,c.center_lat as lat,c.name,
+              sql="select c.id,c.name,count(distinct pse.project_id) as count,c.center_lon as lon,c.center_lat as lat,c.name,
                 CASE WHEN count(distinct ps.project_id) > 1 THEN
                     '#{carry_on_url}'||c.id
                 ELSE

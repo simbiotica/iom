@@ -107,7 +107,7 @@ class OrganizationsController < ApplicationController
 
           location_filter = "and r.id = #{@filter_by_location.last}" if @filter_by_location
 
-
+          raise "1111111111"
           sql="select r.id,count(distinct ps.project_id) as count,r.name,r.center_lon as lon,r.center_lat as lat,
                       CASE WHEN count(distinct ps.project_id) > 1 THEN
                           '#{carry_on_url}'||r.path
@@ -128,6 +128,8 @@ class OrganizationsController < ApplicationController
         else
           if @filter_by_location
             "@filter_by_location.size: " + @filter_by_location.size.to_s
+
+            raise "2222222222"
             sql = if @filter_by_location.size == 1
                     <<-SQL
                       SELECT r.id,
@@ -159,7 +161,7 @@ class OrganizationsController < ApplicationController
                         c.code
                       FROM projects AS p
                       INNER JOIN projects_sites AS ps ON ps.site_id=#{@site.id} and ps.project_id = p.id AND (p.end_date is NULL OR p.end_date > now())
-                      LEFT OUTER JOIN donations on donations.project_id = p.id
+                      INNER JOIN donations on donations.project_id = p.id
                       INNER JOIN countries as c ON c.id = #{params[:location_id]}
                       INNER JOIN countries_projects as cp on cp.country_id = c.id AND cp.project_id = p.id
                       #{category_join}
@@ -190,6 +192,7 @@ class OrganizationsController < ApplicationController
                 SQL
             end
           else
+
             sql="select c.id,count(distinct ps.project_id) as count,c.name,c.center_lon as lon,
                         c.center_lat as lat,c.name,
                         CASE WHEN count(distinct ps.project_id) > 1 THEN
@@ -260,13 +263,13 @@ class OrganizationsController < ApplicationController
       format.kml do
         @projects_for_kml = Project.to_kml(@site, projects_custom_find_options)
       end
-      format.json do
+#      format.json do
 #        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
 #          { projectName: p['project_name'],
 #            geoJSON: p['geojson']
 #          }
 #        end
-      end
+#      end
 
     end
   end

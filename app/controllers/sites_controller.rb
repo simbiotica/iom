@@ -34,7 +34,7 @@ class SitesController < ApplicationController
         # Get the data for the map depending on the region definition of the site (country or region)
         if @site.present? 
           if @site.geographic_context_country_id
-            sql="select r.id,count(ps.project_id) as count,r.name,r.center_lon as lon,
+            sql="select r.id,count(distinct ps.project_id) as count,r.name,r.center_lon as lon,
                       r.center_lat as lat,r.name,
                       CASE WHEN count(distinct ps.project_id) > 1 THEN
                         '/location/'||r.path
@@ -47,7 +47,7 @@ class SitesController < ApplicationController
                       inner join regions as r on pr.region_id=r.id and r.level=#{@site.level_for_region}
                       group by r.id,r.name,lon,lat,r.name,r.path,r.code"
           else
-            sql="select c.id,count(ps.project_id) as count,c.name,c.center_lon as lon,
+            sql="select c.id,count(distinct ps.project_id) as count,c.name,c.center_lon as lon,
                       c.center_lat as lat,
 
                       CASE WHEN count(distinct ps.project_id) > 1 THEN

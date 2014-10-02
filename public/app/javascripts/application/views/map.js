@@ -105,7 +105,7 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
       this.latlng_ = new google.maps.LatLng(parseFloat(info.lat), parseFloat(info.lon));
       this.url = info.url;
       this.count = info.count;
-      this.total_in_region = info.total_in_region || info.count;
+      this.total_in_region = info.total_in_region;
       //this.image = image;
 
       this.map_ = map;
@@ -113,16 +113,16 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
       this.countryName = info.country_name;
 
       if (document.URL.indexOf('force_site_id=3') >= 0) {
-        if (this.total_in_region < 5) {
+        if (this.count < 5) {
           this.diameter = 20;
           //image_source = '/app/images/themes/' + theme + '/marker_2.png';
-        } else if ((this.total_in_region >= 5) && (this.total_in_region < 10)) {
+        } else if ((this.count >= 5) && (this.count < 10)) {
           this.diameter = 26;
           //image_source = '/app/images/themes/' + theme + '/marker_3.png';
-        } else if ((this.total_in_region >= 10) && (this.total_in_region < 18)) {
+        } else if ((this.count >= 10) && (this.count < 18)) {
           this.diameter = 34;
           //image_source = '/app/images/themes/' + theme + '/marker_4.png';
-        } else if (this.total_in_region >= 18) {
+        } else if (this.count >= 18) {
           this.diameter = 42;
           //image_source = '/app/images/themes/' + theme + '/marker_5.png';
         } else {
@@ -130,16 +130,16 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
           //image_source = '/app/images/themes/' + theme + '/marker_6.png';
         }
       } else if (map_type === 'overview_map') {
-        if (this.total_in_region < 25) {
+        if (this.count < 25) {
           this.diameter = 20;
           //image_source = '/app/images/themes/' + theme + '/marker_2.png';
-        } else if ((this.total_in_region >= 25) && (this.total_in_region < 50)) {
+        } else if ((this.count >= 25) && (this.count < 50)) {
           this.diameter = 26;
           // image_source = '/app/images/themes/' + theme + '/marker_3.png';
-        } else if ((this.total_in_region >= 50) && (this.total_in_region < 90)) {
+        } else if ((this.count >= 50) && (this.count < 90)) {
           this.diameter = 34;
           // image_source = '/app/images/themes/' + theme + '/marker_4.png';
-        } else if (this.total_in_region >= 90) {
+        } else if (this.count >= 90) {
           this.diameter = 42;
           // image_source = '/app/images/themes/' + theme + '/marker_5.png';
         } else {
@@ -147,16 +147,16 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
           // image_source = '/app/images/themes/' + theme + '/marker_6.png';
         }
       } else if (map_type === 'administrative_map') {
-        if (this.total_in_region < range) {
+        if (this.count < range) {
           this.diameter = 20;
           // image_source = '/app/images/themes/' + theme + '/marker_2.png';
-        } else if ((this.total_in_region >= range) && (this.total_in_region < (range * 2))) {
+        } else if ((this.count >= range) && (this.count < (range * 2))) {
           this.diameter = 26;
           // image_source = '/app/images/themes/' + theme + '/marker_3.png';
-        } else if ((this.total_in_region >= (range * 2)) && (this.total_in_region < (range * 3))) {
+        } else if ((this.count >= (range * 2)) && (this.count < (range * 3))) {
           this.diameter = 34;
           // image_source = '/app/images/themes/' + theme + '/marker_4.png';
-        } else if ((this.total_in_region >= (range * 3)) && (this.total_in_region < (range * 4))) {
+        } else if ((this.count >= (range * 3)) && (this.count < (range * 4))) {
           this.diameter = 42;
           // image_source = '/app/images/themes/' + theme + '/marker_5.png';
         } else {
@@ -229,8 +229,8 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
               count.style.font = 'normal 18px Arial';
             }
             
-            if (this.total_in_region > 1) {
-                $(count).text(this.total_in_region);
+            if (this.count > 1) {
+                $(count).text(this.count);
             }
 
             div.appendChild(count);
@@ -260,8 +260,8 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
               count.style.font = 'normal 18px Arial';
             }
 
-            if (this.total_in_region > 1) {
-                $(count).text(this.total_in_region);
+            if (this.count > 1) {
+                $(count).text(this.count);
             }
 
             div.appendChild(count);
@@ -281,17 +281,17 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
             top_hidden.className = 'map-top-tooltip';
 
             if ($('body').hasClass('organizations-page')) {
-                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
-                                   Pluralize.inflectForCount('project', this.total_in_region) + ' by this ' + Pluralize.singularize(kind) +
-                                   '</strong>.<br/><strong>' + this.count + ' in total</strong>');
-            } else if ($('body').hasClass('sites-page')) {
                 $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
-                                   Pluralize.inflectForCount('project', this.count) +
+                                   Pluralize.inflectForCount('project', this.count) + ' by this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
+            } else if ($('body').hasClass('sites-page')) {
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
+                                   Pluralize.inflectForCount('project', this.total_in_region) +
                                    '</strong>');
             } else {
-                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
-                                   Pluralize.inflectForCount('project', this.total_in_region) + ' in this ' + Pluralize.singularize(kind) +
-                                   '</strong>.<br/><strong>' + this.count + ' in total</strong>');
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
+                                   Pluralize.inflectForCount('project', this.count) + ' in this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
             }
 
             hidden_div.appendChild(top_hidden);
