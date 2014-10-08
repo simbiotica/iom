@@ -56,7 +56,7 @@ class GeoregionController < ApplicationController
       if @site.navigate_by_regions?
         sql="select r.id,count(distinct ps.project_id) as count,r.name,r.center_lon as lon,
                   r.center_lat as lat,r.name,
-                  CASE WHEN count(ps.project_id) > 1 THEN
+                  CASE WHEN count(distinct ps.project_id) > 1 THEN
                       '/location/'||r.path
                   ELSE
                       '/projects/'||(array_to_string(array_agg(ps.project_id),''))
