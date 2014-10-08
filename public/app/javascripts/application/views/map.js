@@ -285,8 +285,8 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
                                    Pluralize.inflectForCount('project', this.count) + ' by this ' + Pluralize.singularize(kind) +
                                    '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
             } else if ($('body').hasClass('sites-page')) {
-                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.total_in_region + ' ' +
-                                   Pluralize.inflectForCount('project', this.total_in_region) +
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
+                                   Pluralize.inflectForCount('project', this.count) +
                                    '</strong>');
             } else {
                 $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +

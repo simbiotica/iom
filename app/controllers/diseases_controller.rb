@@ -53,8 +53,7 @@ class DiseasesController < ApplicationController
     end
 
     respond_to do |format|
-      format.json do
-
+      format.html do
         
         carry_on_url = disease_path(@data, @carry_on_filters.merge(:location_id => ''))
         if @site.geographic_context_country_id
@@ -113,8 +112,6 @@ class DiseasesController < ApplicationController
         # @chld = ""
         @chd  = "t:"+data.join(",")
         # @chd = ""
-
-        render json: @map_data
       end
       format.js do
         render :update do |page|
@@ -138,13 +135,13 @@ class DiseasesController < ApplicationController
       format.kml do
         @projects_for_kml = Project.to_kml(@site, projects_custom_find_options)
       end
-#      format.json do
-#        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
-#          { projectName: p['project_name'],
- #           geoJSON: p['geojson']
- #         }
- #       end
- #     end
+      format.json do
+        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
+          { projectName: p['project_name'],
+            geoJSON: p['geojson']
+          }
+        end
+      end
 
     end
   end
