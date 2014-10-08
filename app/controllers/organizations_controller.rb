@@ -85,7 +85,7 @@ class OrganizationsController < ApplicationController
     end
 
     respond_to do |format|
-      format.json do
+      format.html do
 
         if @filter_by_category.present?
           if @site.navigate_by_cluster?
@@ -107,12 +107,11 @@ class OrganizationsController < ApplicationController
 
           location_filter = "and r.id = #{@filter_by_location.last}" if @filter_by_location
 
-          raise "1111111111"
           sql="select r.id,count(distinct ps.project_id) as count,r.name,r.center_lon as lon,r.center_lat as lat,
                       CASE WHEN count(distinct ps.project_id) > 1 THEN
                           '#{carry_on_url}'||r.path
                       ELSE
-                          '/projects/'||(array_to_string(array_agg(ps.project_id),''))
+                          '/projects/'||(array_to_string(array_agg(distinct ps.project_id),''))
                       END as url
                       ,r.code,
                       (select count(*) from data_denormalization where regions_ids && ('{'||r.id||'}')::integer[] and (end_date is null OR end_date > now()) and site_id=#{@site.id}) as total_in_region
@@ -129,7 +128,6 @@ class OrganizationsController < ApplicationController
           if @filter_by_location
             "@filter_by_location.size: " + @filter_by_location.size.to_s
 
-            raise "2222222222"
             sql = if @filter_by_location.size == 1
                     <<-SQL
                       SELECT r.id,
@@ -140,7 +138,7 @@ class OrganizationsController < ApplicationController
                         CASE WHEN count(ps.project_id) > 1 THEN
                           '#{carry_on_url}'||r.path
                         ELSE
-                          '/projects/'||(array_to_string(array_agg(ps.project_id),''))
+                          '/projects/'||(array_to_string(array_agg(distinct ps.project_id),''))
                         END AS url,
                         r.code
                       FROM projects_regions AS pr
@@ -179,7 +177,7 @@ class OrganizationsController < ApplicationController
                          CASE WHEN count(ps.project_id) > 1 THEN
                            '#{carry_on_url}'||r.path
                          ELSE
-                           '/projects/'||(array_to_string(array_agg(ps.project_id),''))
+                           '/projects/'||(array_to_string(array_agg(distinct ps.project_id),''))
                          END AS url,
                          r.code
                   FROM projects_regions AS pr
@@ -198,7 +196,7 @@ class OrganizationsController < ApplicationController
                         CASE WHEN count(distinct ps.project_id) > 1 THEN
                             '#{carry_on_url}'||c.id
                         ELSE
-                            '/projects/'||(array_to_string(array_agg(ps.project_id),''))
+                            '/projects/'||(array_to_string(array_agg(distinct ps.project_id),''))
                         END as url,
                         c.iso2_code as code,
                         (select count(*) from data_denormalization where countries_ids && ('{'||c.id||'}')::integer[] and (end_date is null OR end_date > now()) and site_id=#{@site.id}) as total_in_region
@@ -239,8 +237,6 @@ class OrganizationsController < ApplicationController
         end
         @chld = ""
         @chd = ""
-
-        render :json => @map_data
       end
       format.js do
         render :update do |page|
@@ -263,13 +259,13 @@ class OrganizationsController < ApplicationController
       format.kml do
         @projects_for_kml = Project.to_kml(@site, projects_custom_find_options)
       end
-#      format.json do
-#        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
-#          { projectName: p['project_name'],
-#            geoJSON: p['geojson']
-#          }
-#        end
-#      end
+      format.json do
+        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
+          { projectName: p['project_name'],
+            geoJSON: p['geojson']
+          }
+        end
+      end
 
     end
   end
