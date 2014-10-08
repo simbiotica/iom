@@ -283,7 +283,7 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
             if ($('body').hasClass('organizations-page')) {
                 $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
                                    Pluralize.inflectForCount('project', this.count) + ' by this ' + Pluralize.singularize(kind) +
-                                   '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
+                                   '</strong>.<br/><strong>' + (this.total_in_region ? this.total_in_region + ' in total</strong>' : ''));
             } else if ($('body').hasClass('sites-page')) {
                 $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
                                    Pluralize.inflectForCount('project', this.count) +
