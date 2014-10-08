@@ -39,7 +39,7 @@ class SitesController < ApplicationController
                       CASE WHEN count(distinct ps.project_id) > 1 THEN
                         '/location/'||r.path
                       ELSE
-                        '/projects/'||(array_to_string(array_agg(ps.project_id),''))
+                        '/projects/'||array_to_string(array_agg(distinct ps.project_id),'')
                       END as url,
                       r.code
                       from projects_regions as pr 
@@ -53,7 +53,7 @@ class SitesController < ApplicationController
                       CASE WHEN count(distinct ps.project_id) > 1 THEN
                           '/location/'||c.id
                       ELSE
-                          '/projects/'||(array_to_string(array_agg(ps.project_id),''))
+                          '/projects/'||array_to_string(array_agg(distinct ps.project_id),'')
                       END as url,
 
                       iso2_code as code
