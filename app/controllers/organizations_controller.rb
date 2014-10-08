@@ -131,11 +131,11 @@ class OrganizationsController < ApplicationController
             sql = if @filter_by_location.size == 1
                     <<-SQL
                       SELECT r.id,
-                        count(ps.project_id) AS count,
+                        count(distinct ps.project_id) AS count,
                         r.name,
                         r.center_lon AS lon,
                         r.center_lat AS lat,
-                        CASE WHEN count(ps.project_id) > 1 THEN
+                        CASE WHEN count(distinct ps.project_id) > 1 THEN
                           '#{carry_on_url}'||r.path
                         ELSE
                           '/projects/'||(array_to_string(array_agg(distinct ps.project_id),''))
@@ -169,12 +169,12 @@ class OrganizationsController < ApplicationController
             else
                 <<-SQL
                   SELECT r.id,
-                         count(ps.project_id) AS count,
+                         count(distinct ps.project_id) AS count,
                          r.name,
                          r.center_lon AS lon,
                          r.center_lat AS lat,
                          r.name,
-                         CASE WHEN count(ps.project_id) > 1 THEN
+                         CASE WHEN count(distinct ps.project_id) > 1 THEN
                            '#{carry_on_url}'||r.path
                          ELSE
                            '/projects/'||(array_to_string(array_agg(distinct ps.project_id),''))
