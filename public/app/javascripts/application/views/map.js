@@ -291,7 +291,7 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
             } else {
                 $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
                                    Pluralize.inflectForCount('project', this.count) + ' in this ' + Pluralize.singularize(kind) +
-                                   '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
+                                   '</strong>.<br/><strong>' + (this.total_in_region ? this.total_in_region + ' in total</strong>' : ''));
             }
 
             hidden_div.appendChild(top_hidden);

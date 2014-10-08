@@ -54,7 +54,7 @@ class GeoregionController < ApplicationController
       @area_parent = ""
 
       if @site.navigate_by_regions?
-        sql="select r.id,count(ps.project_id) as count,r.name,r.center_lon as lon,
+        sql="select r.id,count(distinct ps.project_id) as count,r.name,r.center_lon as lon,
                   r.center_lat as lat,r.name,
                   CASE WHEN count(ps.project_id) > 1 THEN
                       '/location/'||r.path
@@ -68,8 +68,8 @@ class GeoregionController < ApplicationController
                   #{category_join}
                   group by r.id,r.name,lon,lat,r.name,r.path,r.code
                   UNION
-                  select c.id,count(cp.project_id) as count,c.name,c.center_lon as lon, c.center_lat as lat,c.name,
-                  CASE WHEN count(ps.project_id) > 1 THEN
+                  select c.id,count(distinct cp.project_id) as count,c.name,c.center_lon as lon, c.center_lat as lat,c.name,
+                  CASE WHEN count(distinct ps.project_id) > 1 THEN
                   '/countries/'||c.id
                   ELSE
                   '/projects/'||(array_to_string(array_agg(ps.project_id),''))
@@ -82,7 +82,7 @@ class GeoregionController < ApplicationController
       else
         sql="select *
           from(
-          select c.id,count(ps.project_id) as count,c.name,c.center_lon as lon,c.center_lat as lat
+          select c.id,count(distinct ps.project_id) as count,c.name,c.center_lon as lon,c.center_lat as lat
           from (countries_projects as cp
             inner join projects_sites as ps on cp.project_id=ps.project_id and site_id=#{@site.id})
             inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
