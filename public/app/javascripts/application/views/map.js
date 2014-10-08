@@ -585,7 +585,7 @@ define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, 
         sublayer = currentLayer.createSubLayer({
           sql: 'SELECT ' + currentTable + '.country_name, ' + currentTable + '.code, ' + currentTable + '.year,' + currentTable + '.data, ne_10m_admin_0_countries.the_geom, ne_10m_admin_0_countries.the_geom_webmercator FROM ' + currentTable + ' join ne_10m_admin_0_countries on ' + currentTable + '.code=ne_10m_admin_0_countries.adm0_a3_is',
           cartocss: currentCSS,
-          interaction: 'country_name, data, year',
+          interaction: 'country_name, data, year'
         });
 
         sublayer.on();
