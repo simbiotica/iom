@@ -74,13 +74,13 @@ class ActivitiesController < ApplicationController
                 inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
                 left outer join projects_activities as pa on pa.project_id=p.id and pa.activity_id=#{params[:id].sanitize_sql!.to_i}
                 #{location_filter}
-                group by r.id,r.name,lon,lat,r.name,url,r.code"
+                group by r.id,r.name,lon,lat,r.name,r.code"
         else
 
           location_filter = "where c.id = #{@filter_by_location.first}" if @filter_by_location
           sql="select c.id,c.name,count(distinct pa.project_id) as count,c.center_lon as lon,c.center_lat as lat,c.name,               
                CASE WHEN count(distinct pa.project_id) > 1 THEN
-                 '#{carry_on_url}'||r.path
+                 '#{carry_on_url}'||c.id
                ELSE
                  '/projects/'||array_to_string(array_agg(distinct pa.project_id),'')
                END as url,
@@ -92,7 +92,7 @@ class ActivitiesController < ApplicationController
                   inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
                   left outer join projects_activities as pa on pa.project_id=p.id and pa.activity_id=#{params[:id].sanitize_sql!.to_i}
                   #{location_filter}
-                  group by c.id,c.name,lon,lat,c.name,url"
+                  group by c.id,c.name,lon,lat,c.name"
         end
 
 
