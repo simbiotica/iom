@@ -75,6 +75,43 @@ class DiseasesController < ApplicationController
                 inner join diseases_projects as pa on pa.project_id=p.id and pa.disease_id=#{params[:id].sanitize_sql!.to_i}
                 #{location_filter}
                 group by r.id,r.name,lon,lat,r.name,r.code"
+        elsif @filter_by_location.present? and @filter_by_location.size == 1
+          sql = "select r.id,
+                 count (distinct pa.project_id) as count,
+                 r.name,
+                 r.center_lon as lon,
+                 r.center_lat as lat,
+                 CASE WHEN count(distinct pa.project_id) > 1 THEN
+                   '#{carry_on_url}'||r.path
+                 ELSE
+                   '/projects/'||(array_to_string(array_agg(distinct pa.project_id),''))
+                 END AS url,
+                 r.code,
+                 (select count(*) from data_denormalization where regions_ids && ('{'||r.id||'}')::integer[] and (end_date is null OR end_date > now()) and site_id=#{@site.id}) as total_in_region
+                 from projects_regions as pr
+                 inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{@site.id}
+                 inner join projects as p on pr.project_id=p.id and (p.end_date is NULL OR p.end_date > now())
+                 inner join regions as r on pr.region_id=r.id and r.level=#{@site.levels_for_region.min} and r.country_id=#{@filter_by_location.first}
+                 inner join diseases_projects as pa on pa.project_id=p.id and pa.disease_id=#{params[:id].sanitize_sql!.to_i}
+                 group by r.id,r.name,lon,lat,r.code"   
+        elsif @filter_by_location.present? and @filter_by_location.size > 1         
+          sql = "select r.id,
+                 count(distinct pa.project_id) as count,
+                 r.name,
+                 r.center_lon as lon,
+                 r.center_lat as lat,
+                 CASE WHEN count(distinct pa.project_id) > 1 THEN
+                   '#{carry_on_url}'||r.path
+                 ELSE
+                   '/projects/'||(array_to_string(array_agg(distinct pa.project_id),''))
+                 END AS url,
+                 r.code
+                 from projects_regions as pr
+                 inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{@site.id}
+                 inner join projects as p on pr.project_id=p.id and (p.end_date is NULL or p.end_date > now())
+                 inner join regions as r on pr.region_id=r.id and r.level=#{@site.levels_for_region.min} and r.country_id=#{@filter_by_location.shift} and r.id in (#{@filter_by_location.join(',')})
+                 inner join diseases_projects as pa on pa.project_id=p.id and pa.disease_id=#{params[:id].sanitize_sql!.to_i}
+                 group by r.id,r.name,lon,lat,r.path,r.code"
         else
           location_filter = "where c.id = #{@filter_by_location.first}" if @filter_by_location
           sql="select c.id,c.name,count(distinct pa.project_id) as count,c.center_lon as lon,c.center_lat as lat,c.name,

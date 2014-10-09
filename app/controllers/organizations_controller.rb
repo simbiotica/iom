@@ -104,7 +104,6 @@ class OrganizationsController < ApplicationController
         #end
 
         if @site.geographic_context_country_id
-
           location_filter = "and r.id = #{@filter_by_location.last}" if @filter_by_location
 
           sql="select r.id,count(distinct ps.project_id) as count,r.name,r.center_lon as lon,r.center_lat as lat,
@@ -173,7 +172,6 @@ class OrganizationsController < ApplicationController
                          r.name,
                          r.center_lon AS lon,
                          r.center_lat AS lat,
-                         r.name,
                          CASE WHEN count(distinct ps.project_id) > 1 THEN
                            '#{carry_on_url}'||r.path
                          ELSE
@@ -186,7 +184,7 @@ class OrganizationsController < ApplicationController
                   INNER JOIN regions AS r ON pr.region_id=r.id AND r.level=#{@site.levels_for_region.min} AND r.country_id=#{@filter_by_location.shift} AND r.id IN (#{@filter_by_location.join(',')})
                   #{category_join}
                   WHERE p.primary_organization_id = #{params[:id].sanitize_sql!.to_i}
-                  GROUP BY r.id,r.name,lon,lat,r.name,r.path,r.code
+                  GROUP BY r.id,r.name,lon,lat,r.path,r.code
                 SQL
             end
           else
