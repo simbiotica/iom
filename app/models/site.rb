@@ -2,7 +2,7 @@
 #
 # Table name: sites
 #
-#  id                              :integer         not null, primary key
+#  id                              :integer          not null, primary key
 #  name                            :string(255)
 #  short_description               :text
 #  long_description                :text
@@ -19,8 +19,8 @@
 #  blog_url                        :string(255)
 #  word_for_clusters               :string(255)
 #  word_for_regions                :string(255)
-#  show_global_donations_raises    :boolean
-#  project_classification          :integer         default(0)
+#  show_global_donations_raises    :boolean          default(FALSE)
+#  project_classification          :integer          default(0)
 #  geographic_context_country_id   :integer
 #  geographic_context_region_id    :integer
 #  project_context_cluster_id      :integer
@@ -29,38 +29,39 @@
 #  project_context_tags            :string(255)
 #  created_at                      :datetime
 #  updated_at                      :datetime
-#  geographic_context_geometry     :string
+#  geographic_context_geometry     :string           geometry, 4326
 #  project_context_tags_ids        :string(255)
-#  status                          :boolean
-#  visits                          :float           default(0.0)
-#  visits_last_week                :float           default(0.0)
+#  status                          :boolean          default(FALSE)
+#  visits                          :float            default(0.0)
+#  visits_last_week                :float            default(0.0)
 #  aid_map_image_file_name         :string(255)
 #  aid_map_image_content_type      :string(255)
 #  aid_map_image_file_size         :integer
 #  aid_map_image_updated_at        :datetime
-#  navigate_by_country             :boolean
-#  navigate_by_level1              :boolean
-#  navigate_by_level2              :boolean
-#  navigate_by_level3              :boolean
+#  navigate_by_country             :boolean          default(FALSE)
+#  navigate_by_level1              :boolean          default(FALSE)
+#  navigate_by_level2              :boolean          default(FALSE)
+#  navigate_by_level3              :boolean          default(FALSE)
 #  map_styles                      :text
 #  overview_map_lat                :float
 #  overview_map_lon                :float
 #  overview_map_zoom               :integer
+#  internal_description            :text
+#  featured                        :boolean          default(FALSE)
 #
-
 
 class Site < ActiveRecord::Base
 
   @@main_domain = 'ngoaidmap.org'
 
-  has_many :resources, :conditions => 'resources.element_type = #{Iom::ActsAsResource::SITE_TYPE}', :foreign_key => :element_id, :dependent => :destroy
-  has_many :media_resources, :conditions => 'media_resources.element_type = #{Iom::ActsAsResource::SITE_TYPE}', :foreign_key => :element_id, :dependent => :destroy, :order => 'position ASC'
+  has_many :resources, :conditions => "resources.element_type = #{Iom::ActsAsResource::SITE_TYPE}", :foreign_key => :element_id, :dependent => :destroy
+  has_many :media_resources, :conditions => "media_resources.element_type = #{Iom::ActsAsResource::SITE_TYPE}", :foreign_key => :element_id, :dependent => :destroy, :order => 'position ASC'
   belongs_to  :theme
   belongs_to  :geographic_context_country, :class_name => 'Country'
   belongs_to :geographic_context_region, :class_name => 'Region'
   has_many :partners, :dependent => :destroy
   has_many :pages, :dependent => :destroy
-  has_many :cached_projects, :class_name => 'Project', :finder_sql => 'select projects.* from projects, projects_sites where projects_sites.site_id = #{id} and projects_sites.project_id = projects.id'
+  has_many :cached_projects, :class_name => 'Project', :finder_sql => proc { "select projects.* from projects, projects_sites where projects_sites.site_id = #{id} and projects_sites.project_id = projects.id" }
   belongs_to :geographic_context_country, :class_name => 'Country'
   belongs_to :geographic_context_region, :class_name => 'Region'
   has_many :stats, :dependent => :destroy
@@ -383,7 +384,7 @@ class Site < ActiveRecord::Base
   # Array of arrays
   # [[country, count], [country, count]]
   def projects_countries
-    sql="select #{Country.custom_fields.join(',')},count(ps.*) as count from countries
+    sql="select #{Country.custom_fields.join(',')},count(distinct ps.project_id) as count from countries
       inner join countries_projects as pr on pr.country_id=countries.id
       inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{self.id}
       inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
@@ -395,7 +396,7 @@ class Site < ActiveRecord::Base
   # Array of arrays
   # [[organization, count], [organization, count]]
   def projects_organizations
-    sql="select o.id,o.name,count(ps.*) as count from organizations as o
+    sql="select o.id,o.name,count(distinct ps.project_id) as count from organizations as o
       inner join projects as p on o.id=p.primary_organization_id
       inner join projects_sites as ps on p.id=ps.project_id and ps.site_id=#{self.id}
       inner join projects as pr on ps.project_id=pr.id and (pr.end_date is null OR pr.end_date > now())
@@ -411,7 +412,7 @@ class Site < ActiveRecord::Base
   end
 
   def total_projects(options = {})
-    sql = "select count(projects_sites.project_id) as count from projects_sites, projects where projects_sites.site_id = #{self.id}
+    sql = "select count(distinct projects_sites.project_id) as count from projects_sites, projects where projects_sites.site_id = #{self.id}
                   and projects_sites.project_id = projects.id and (projects.end_date is null OR projects.end_date > now())"
     ActiveRecord::Base.connection.execute(sql).first['count'].to_i
   end
@@ -510,9 +511,10 @@ class Site < ActiveRecord::Base
     coords         = geometry.split(',').map{|c| c.split(' ')}
     polygon_points = []
 
-    coords.each {|c| polygon_points << Point.from_x_y(c.last.to_f, c.first.to_f)}
+    geographic_factory = RGeo::Geographic.spherical_factory()
 
-    self.geographic_context_geometry = Polygon.from_points([polygon_points])
+    coords.each {|c| polygon_points << geographic_factory.point(c.last.to_f, c.first.to_f)}
+    self.geographic_context_geometry = geographic_factory.polygon(geographic_factory.linear_ring(polygon_points))
   end
 
   def subdomain=(subdomain)
@@ -530,7 +532,8 @@ class Site < ActiveRecord::Base
   def countries_select
     filter = if geographic_context_country_id? && geographic_context_region_id.blank?
                <<-SQL
-                 INNER JOIN countries_projects cp ON cp.project_id = projects.id AND cp.country_id = #{self.geographic_context_country_id} AND cp.country_id = c.id
+                 INNER JOIN countries_projects cp ON cp.country_id = #{self.geographic_context_country_id} AND cp.country_id = c.id
+                 INNER JOIN projects              ON cp.project_id=projects.id AND (projects.end_date IS NULL OR projects.end_date > now())
                SQL
              elsif geographic_context_region_id?
                <<-SQL
@@ -618,6 +621,38 @@ SQL
       ORDER BY d.name ASC"
   end
 
+  def audience_select
+    Audience.find_by_sql " SELECT distinct a.id as id , a.name as name
+      FROM projects_sites AS ps JOIN projects as p ON ps.project_id = p.id AND ps.site_id = #{self.id} AND p.end_date > NOW()
+      JOIN projects_audiences as pa ON pa.project_id = p.id
+      JOIN audiences as a on a.id = pa.audience_id
+      ORDER BY a.name ASC"
+  end
+
+  def activities_select
+    Activity.find_by_sql " SELECT distinct a.id as id , a.name as name
+      FROM projects_sites AS ps JOIN projects as p ON ps.project_id = p.id AND ps.site_id = #{self.id} AND p.end_date > NOW()
+      JOIN projects_activities as pa ON pa.project_id = p.id
+      JOIN activities as a on a.id = pa.activity_id
+      ORDER BY a.name ASC"
+  end
+
+  def diseases_select
+    Activity.find_by_sql " SELECT distinct a.id as id , a.name as name
+      FROM projects_sites AS ps JOIN projects as p ON ps.project_id = p.id AND ps.site_id = #{self.id} AND p.end_date > NOW()
+      JOIN diseases_projects as pa ON pa.project_id = p.id
+      JOIN diseases as a on a.id = pa.disease_id
+      ORDER BY a.name ASC"
+  end
+
+  def medicines_select
+    Activity.find_by_sql " SELECT distinct a.id as id , a.name as name
+      FROM projects_sites AS ps JOIN projects as p ON ps.project_id = p.id AND ps.site_id = #{self.id} AND p.end_date > NOW()
+      JOIN medicines_projects as pa ON pa.project_id = p.id
+      JOIN medicines as a on a.id = pa.medicine_id
+      ORDER BY a.name ASC"
+  end
+
   def regions
     if geographic_context_country_id.blank? && geographic_context_region_id.blank?
       []
@@ -653,7 +688,7 @@ SQL
     ActiveRecord::Base.connection.execute(sql)
     #Work on the denormalization
 
-    sql="insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,donors_ids,is_active,site_id,created_at)
+    sql="insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,donors_ids,activities,activities_ids,audiences,audiences_ids,diseases,diseases_ids,is_active,site_id,created_at)
     select  * from
            (SELECT p.id as project_id, p.name as project_name, p.description as project_description,
            o.id as organization_id, o.name as organization_name,
@@ -668,6 +703,13 @@ SQL
            '|'||array_to_string(array_agg(distinct clus.name),'|')||'|' as clusters,
            ('{'||array_to_string(array_agg(distinct clus.id),',')||'}')::integer[] as cluster_ids,
            ('{'||array_to_string(array_agg(distinct d.donor_id),',')||'}')::integer[] as donors_ids,
+           '|'||array_to_string(array_agg(distinct act.name),'|')||'|' as activities,
+           ('{'||array_to_string(array_agg(distinct act.id),',')||'}')::integer[] as activities_ids,
+           '|'||array_to_string(array_agg(distinct aud.name),'|')||'|' as audiences,
+           ('{'||array_to_string(array_agg(distinct aud.id),',')||'}')::integer[] as audiences_ids,
+           '|'||array_to_string(array_agg(distinct dis.name),'|')||'|' as diseases,
+           ('{'||array_to_string(array_agg(distinct dis.id),',')||'}')::integer[] as diseases_ids,
+     
            CASE WHEN end_date is null OR p.end_date > now() THEN true ELSE false END AS is_active,
            ps.site_id,p.created_at
            FROM projects as p
@@ -682,6 +724,13 @@ SQL
            LEFT JOIN projects_sectors as psec ON psec.project_id=p.id
            LEFT JOIN sectors as sec ON sec.id=psec.sector_id
            LEFT JOIN donations as d ON d.project_id=ps.project_id
+           LEFT JOIN projects_activities as actpro ON actpro.project_id=p.id          
+           LEFT JOIN activities as act ON act.id=actpro.activity_id
+           LEFT JOIN projects_audiences as audpro ON audpro.project_id=p.id
+           LEFT JOIN audiences as aud ON aud.id=audpro.audience_id
+           LEFT JOIN diseases_projects as dispro on dispro.project_id=p.id
+           LEFT JOIN diseases as dis ON dis.id=dispro.disease_id
+            
            where site_id=#{self.id}
            GROUP BY p.id,p.name,o.id,o.name,p.description,p.start_date,p.end_date,ps.site_id,p.created_at) as subq"
      ActiveRecord::Base.connection.execute(sql)
@@ -690,8 +739,8 @@ SQL
            #Those projects not in a site right now also need to be handled for exports
            sql_for_orphan_projects = """
         insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,
-        start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,
-        donors_ids,is_active,created_at)
+        start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,donors_ids,
+        activities,activities_ids,audiences,audiences_ids,diseases,diseases_ids,is_active,created_at)
         select  * from
           (SELECT p.id as project_id, p.name as project_name, p.description as project_description,
                 o.id as organization_id, o.name as organization_name,
@@ -706,6 +755,13 @@ SQL
                 '|'||array_to_string(array_agg(distinct clus.name),'|')||'|' as clusters,
                 ('{'||array_to_string(array_agg(distinct clus.id),',')||'}')::integer[] as cluster_ids,
                 ('{'||array_to_string(array_agg(distinct d.donor_id),',')||'}')::integer[] as donors_ids,
+                '|'||array_to_string(array_agg(distinct act.name),'|')||'|' as activities,
+                ('{'||array_to_string(array_agg(distinct act.id),',')||'}')::integer[] as activities_ids,
+                '|'||array_to_string(array_agg(distinct aud.name),'|')||'|' as audiences,
+                ('{'||array_to_string(array_agg(distinct aud.id),',')||'}')::integer[] as audiences_ids,
+                '|'||array_to_string(array_agg(distinct dis.name),'|')||'|' as diseases,
+                ('{'||array_to_string(array_agg(distinct dis.id),',')||'}')::integer[] as diseases_ids,
+
                 CASE WHEN end_date is null OR p.end_date > now() THEN true ELSE false END AS is_active,
                 p.created_at
                 FROM projects as p
@@ -719,6 +775,13 @@ SQL
                 LEFT JOIN projects_sectors as psec ON psec.project_id=p.id
                 LEFT JOIN sectors as sec ON sec.id=psec.sector_id
                 LEFT JOIN donations as d ON d.project_id=p.id
+                LEFT JOIN projects_activities as actpro ON actpro.project_id=p.id          
+                LEFT JOIN activities as act ON act.id=actpro.activity_id
+                LEFT JOIN projects_audiences as audpro ON audpro.project_id=p.id
+                LEFT JOIN audiences as aud ON aud.id=audpro.audience_id
+                LEFT JOIN diseases_projects as dispro on dispro.project_id=p.id
+                LEFT JOIN diseases as dis ON dis.id=dispro.disease_id
+
                 where p.id not in (select project_id from projects_sites)
                 GROUP BY p.id,p.name,o.id,o.name,p.description,p.start_date,p.end_date,p.created_at) as subq"""
     ActiveRecord::Base.connection.execute(sql_for_orphan_projects)
@@ -743,6 +806,14 @@ SQL
 
   def projects_for_kml
     sql = "select p.name, ST_AsKML(p.the_geom) as the_geom
+    from projects as p
+    inner join projects_sites as ps on p.id=ps.project_id and ps.site_id=#{self.id}
+    where (p.end_date is null OR p.end_date > now())"
+    ActiveRecord::Base.connection.execute(sql)
+  end
+
+  def projects_for_geojson
+    sql = "select p.name, ST_AsGeoJSON(p.the_geom) as the_geom
     from projects as p
     inner join projects_sites as ps on p.id=ps.project_id and ps.site_id=#{self.id}
     where (p.end_date is null OR p.end_date > now())"

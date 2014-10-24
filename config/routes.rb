@@ -42,16 +42,19 @@ Iom::Application.routes.draw do
   get '/sites/download/(:id).kml', :to => 'sites#downloads', :format => :kml
 
   match 'regions/:id' => 'georegion#old_regions'
-  # HACK!! route globbing doesn't work well when trying to get the request format in Rails <=3.0.7
-  match 'location/*ids.csv' => 'georegion#show', :as => 'location', :format => 'csv'
-  match 'location/*ids.xls' => 'georegion#show', :as => 'location', :format => 'xls'
-  match 'location/*ids.kml' => 'georegion#show', :as => 'location', :format => 'kml'
-  # End HACK!!
-  match 'location/*ids' => 'georegion#show', :as => 'location'
+  
+  resources :location, :controller => 'georegion' do
+    get ':id', :to => 'georegion#show'
+  end
 
   # clusters and sector work through the same controller and view
   match 'sectors/:id' => 'clusters_sectors#show', :as => 'sector'
-  match 'clusters/:id'   => 'clusters_sectors#show', :as => 'cluster'
+  match 'clusters/:id' => 'clusters_sectors#show', :as => 'cluster'
+
+  match 'activities/:id'  => 'activities#show', :as => 'activity'
+  match 'audience/:id'    => 'audience#show', :as => 'audience'
+  match 'diseases/:id'    => 'diseases#show', :as => 'disease'
+  match 'medicines/:id'   => 'medicines#show', :as => 'medicine'
 
   # pages
   match '/p/:id' => 'pages#show', :as => :page
@@ -120,7 +123,7 @@ Iom::Application.routes.draw do
     resources :layers
   end
 
-  if Rails.env.development?
-    mount AlertsMailer::Preview => 'mail_view'
-  end
+#  if Rails.env.development?
+#    mount AlertsMailer::Preview => 'mail_view'
+#  end
 end

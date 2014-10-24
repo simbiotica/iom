@@ -161,15 +161,18 @@ HTML
           when 'donors'
             raw("#{link_to geo.name, donor_path(@donor, @carry_on_filters.merge(:location_id => geo.to_param))} - #{count}")
         else
-          raw("#{link_to geo.name, location_path(geo, @carry_on_filters)} - #{count}")
+          raw("#{link_to geo.name, location_path(geo.id, @carry_on_filters)} - #{count}")
         end
       end)
     end
     lis << content_tag(:li, "Others - #{values.last}", :class => 'pos3') if projects.count > 3
+    chart = "<img src='http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00' class='pie_chart' />"
 
-    ul    = content_tag :ul, raw(lis), :class => 'chart'
-    chart = image_tag "http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00", :class => 'pie_chart'
-    [ul, chart]
+    ul = [lis, chart].flatten.inject('') do |content, element| 
+      content << raw(element)
+    end
+
+    content_tag :ul, raw(ul), :class => 'chart'
   end
 
   def projects_by_organization(collection = nil)
@@ -184,10 +187,14 @@ HTML
       lis << "<li class =pos#{index}> <a href=/organizations/#{o[:id]} >#{o[:name]}</a> - #{o[:count]}</li>"
     end
     lis << content_tag(:li, "Others - #{values.last}", :class => 'pos3') if organizations.count > 3
-    ul    = content_tag :ul, raw(lis), :class => 'chart'
     url = "http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00"
-    chart = image_tag "http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00", :class => 'pie_chart'
-    [ul, chart]
+    chart = "<img src='http://chart.apis.google.com/chart?cht=p&chs=120x120&chd=t:#{values.join(',')}&chds=0,#{max_value}&chco=333333|565656|727272|ADADAD|EFEFEF|FFFFFF&chf=bg,s,FFFFFF00' class='pie_chart' />"
+
+    ul = [lis, chart].flatten.inject('') do |content, element|
+      content << raw(element)
+    end
+
+    content_tag :ul, raw(ul), :class => 'chart'
   end
 
   # def donors_projects_by_organization(collection = nil)
@@ -261,6 +268,14 @@ HTML
       if @data
         if @data.is_a?(Cluster)
           cluster_path(pagination_params)
+        elsif @data.is_a?(Activity)
+          activity_path(pagination_params)
+        elsif @data.is_a?(Audience)
+          audience_path(pagination_params)
+        elsif @data.is_a?(Disease)
+          disease_path(pagination_params)
+        elsif @data.is_a?(Medicine)
+          medicine_path(pagination_params)
         else
           sector_path(pagination_params)
         end

@@ -11,7 +11,6 @@ Iom::Application.configure do
 
   # Show full error reports and disable caching
   config.consider_all_requests_local       = true
-  config.action_view.debug_rjs             = true
   config.action_controller.perform_caching = false
 
   # Don't care if the mailer can't send
@@ -26,7 +25,7 @@ Iom::Application.configure do
   # Only use best-standards-support built into browsers
   config.action_dispatch.best_standards_support = :builtin
 
-  #config.action_controller.cache_store = :memory_store
+  config.action_controller.cache_store = :memory_store
 
   # Assets path
   config.action_controller.asset_path = proc { |asset_path|

@@ -2,12 +2,12 @@
 #
 # Table name: countries
 #
-#  id               :integer         not null, primary key
+#  id               :integer          not null, primary key
 #  name             :string(255)
 #  code             :string(255)
 #  center_lat       :float
 #  center_lon       :float
-#  the_geom         :string
+#  the_geom         :string           multi_polygon, 4326
 #  wiki_url         :string(255)
 #  wiki_description :text
 #  iso2_code        :string(255)
@@ -21,6 +21,10 @@ class Country < ActiveRecord::Base
   has_and_belongs_to_many :projects
 
   before_save :update_wikipedia_description
+
+  def self.find_by_name_insensitive( name )
+    where('lower(name) = lower(?)', name).first
+  end
 
   def self.custom_fields
     (columns.map{ |c| c.name } - ['the_geom']).map{ |c| "#{self.table_name}.#{c}" }
@@ -118,7 +122,7 @@ class Country < ActiveRecord::Base
       (select co.id, co.name,
            ST_Distance((select ST_Centroid(the_geom) from regions where id=#{self.id}), ST_Centroid(the_geom)) as dist,
            (
-            select count(*) from countries_projects as cp
+            select count(distinct cp.project_id) from countries_projects as cp
             inner join projects as p on p.id=cp.project_id and (p.end_date is null OR p.end_date > now())
             inner join projects_sites as ps on cp.project_id=ps.project_id and ps.site_id=#{site.id}
             where country_id=co.id
@@ -162,6 +166,15 @@ SQL
 
   def projects_for_kml(site)
     sql = "select p.name, ST_AsKML(p.the_geom) as the_geom
+    from countries_projects as cp
+    inner join projects_sites as ps on cp.project_id=ps.project_id and ps.site_id=#{site.id}
+    inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
+    where cp.country_id=#{self.id}"
+    ActiveRecord::Base.connection.execute(sql)
+  end
+
+  def projects_for_geojson(site)
+    sql = "select p.name, ST_AsGeoJSON(p.the_geom) as the_geom
     from countries_projects as cp
     inner join projects_sites as ps on cp.project_id=ps.project_id and ps.site_id=#{site.id}
     inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())

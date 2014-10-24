@@ -1,7 +1,7 @@
 /*global google,map_type,map_data:true,map_center,kind,map_zoom,MAP_EMBED,show_regions_with_one_project,max_count,empty_layer,globalPage,page*/
 'use strict';
 
-define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
+define(['underscore', 'backbone', 'pluralize', 'underscoreString'], function(_, Backbone, Pluralize) {
 
   var stylesArray = [{
     'featureType': 'landscape.natural',
@@ -98,7 +98,7 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
       return new google.maps.Point(x, y);
     };
 
-    function IOMMarker(info, diameter, classname, map) {
+    function IOMMarker(info, classname, map) {
       var isRegion = !!(!info.total_in_region && info.code === null && info.region_name);
 
       // this.latlng_ = new google.maps.LatLng(info.lat,info.lon);
@@ -111,7 +111,64 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
       this.map_ = map;
       this.name = info.name || info.region_name;
       this.countryName = info.country_name;
-      this.diameter = diameter;
+
+      if (document.URL.indexOf('force_site_id=3') >= 0) {
+        if (this.count < 5) {
+          this.diameter = 20;
+          //image_source = '/app/images/themes/' + theme + '/marker_2.png';
+        } else if ((this.count >= 5) && (this.count < 10)) {
+          this.diameter = 26;
+          //image_source = '/app/images/themes/' + theme + '/marker_3.png';
+        } else if ((this.count >= 10) && (this.count < 18)) {
+          this.diameter = 34;
+          //image_source = '/app/images/themes/' + theme + '/marker_4.png';
+        } else if (this.count >= 18) {
+          this.diameter = 42;
+          //image_source = '/app/images/themes/' + theme + '/marker_5.png';
+        } else {
+          this.diameter = 26;
+          //image_source = '/app/images/themes/' + theme + '/marker_6.png';
+        }
+      } else if (map_type === 'overview_map') {
+        if (this.count < 25) {
+          this.diameter = 20;
+          //image_source = '/app/images/themes/' + theme + '/marker_2.png';
+        } else if ((this.count >= 25) && (this.count < 50)) {
+          this.diameter = 26;
+          // image_source = '/app/images/themes/' + theme + '/marker_3.png';
+        } else if ((this.count >= 50) && (this.count < 90)) {
+          this.diameter = 34;
+          // image_source = '/app/images/themes/' + theme + '/marker_4.png';
+        } else if (this.count >= 90) {
+          this.diameter = 42;
+          // image_source = '/app/images/themes/' + theme + '/marker_5.png';
+        } else {
+          this.diameter = 26;
+          // image_source = '/app/images/themes/' + theme + '/marker_6.png';
+        }
+      } else if (map_type === 'administrative_map') {
+        if (this.count < range) {
+          this.diameter = 20;
+          // image_source = '/app/images/themes/' + theme + '/marker_2.png';
+        } else if ((this.count >= range) && (this.count < (range * 2))) {
+          this.diameter = 26;
+          // image_source = '/app/images/themes/' + theme + '/marker_3.png';
+        } else if ((this.count >= (range * 2)) && (this.count < (range * 3))) {
+          this.diameter = 34;
+          // image_source = '/app/images/themes/' + theme + '/marker_4.png';
+        } else if ((this.count >= (range * 3)) && (this.count < (range * 4))) {
+          this.diameter = 42;
+          // image_source = '/app/images/themes/' + theme + '/marker_5.png';
+        } else {
+          this.diameter = 26;
+          // image_source = '/app/images/themes/' + theme + '/marker_6.png';
+        }
+      } else {
+        this.diameter = 34;
+        this.classname = 'marker-project-bubble';
+        // image_source = '/app/images/themes/' + theme + '/project_marker.png';
+      }
+
       this.offsetVertical_ = -(this.diameter / 2);
       this.offsetHorizontal_ = -(this.diameter / 2);
       this.height_ = this.diameter;
@@ -146,9 +203,10 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
         div.style.zIndex = 1;
         div.style.cursor = 'pointer';
 
+        var count;
         try {
           if (show_regions_with_one_project) {
-            var count = document.createElement('p');
+            count = document.createElement('p');
             count.style.position = 'absolute';
             count.style.top = '50%';
             count.style.left = '50%';
@@ -170,12 +228,16 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
               count.style.margin = '-9px 0 0 0px';
               count.style.font = 'normal 18px Arial';
             }
-            $(count).text(this.count);
+            
+            if (this.count > 1) {
+                $(count).text(this.count);
+            }
+
             div.appendChild(count);
           }
         } catch (e) {
           if (this.count > 1) {
-            var count = document.createElement('p');
+            count = document.createElement('p');
             count.style.position = 'absolute';
             count.style.top = '50%';
             count.style.left = '50%';
@@ -197,7 +259,11 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
               count.style.margin = '-9px 0 0 0px';
               count.style.font = 'normal 18px Arial';
             }
-            $(count).text(this.count);
+
+            if (this.count > 1) {
+                $(count).text(this.count);
+            }
+
             div.appendChild(count);
           }
         }
@@ -214,12 +280,18 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
             var top_hidden = document.createElement('div');
             top_hidden.className = 'map-top-tooltip';
 
-            if (this.total_in_region && $('body').hasClass('organizations-page')) {
-              $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ((this.count > 1) ? ' projects by this ' + kind.slice(0, -1) : ' project by this ' + kind.slice(0, -1)) + '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
-            } else if (this.total_in_region) {
-              $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ((this.count > 1) ? ' projects in this ' + kind.slice(0, -1) : ' project in this ' + kind.slice(0, -1)) + '</strong>.<br/><strong>' + this.total_in_region + ' in total</strong>');
+            if ($('body').hasClass('organizations-page')) {
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
+                                   Pluralize.inflectForCount('project', this.count) + ' by this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + (this.total_in_region ? this.total_in_region + ' in total</strong>' : ''));
+            } else if ($('body').hasClass('sites-page')) {
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
+                                   Pluralize.inflectForCount('project', this.count) +
+                                   '</strong>');
             } else {
-              $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ((this.count > 1) ? ' projects' : ' project') + '</strong>');
+                $(top_hidden).html('<h3>' + this.name + '</h3><strong>' + this.count + ' ' +
+                                   Pluralize.inflectForCount('project', this.count) + ' in this ' + Pluralize.singularize(kind) +
+                                   '</strong>.<br/><strong>' + (this.total_in_region ? this.total_in_region + ' in total</strong>' : ''));
             }
 
             hidden_div.appendChild(top_hidden);
@@ -513,7 +585,7 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
         sublayer = currentLayer.createSubLayer({
           sql: 'SELECT ' + currentTable + '.country_name, ' + currentTable + '.code, ' + currentTable + '.year,' + currentTable + '.data, ne_10m_admin_0_countries.the_geom, ne_10m_admin_0_countries.the_geom_webmercator FROM ' + currentTable + ' join ne_10m_admin_0_countries on ' + currentTable + '.code=ne_10m_admin_0_countries.adm0_a3_is',
           cartocss: currentCSS,
-          interaction: 'country_name, data, year',
+          interaction: 'country_name, data, year'
         });
 
         sublayer.on();
@@ -575,12 +647,14 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
     if (map_type === 'administrative_map') {
       range = max_count / 5;
     }
-    var diameter = 0;
 
     // If region exist, reject a country object
     _.each(map_data, function(d) {
-      if (d.type === 'region') {
+      if (d !== null && d.type === 'region') {
         map_data = _.reject(map_data, function(d) {
+          if( d === null ){
+            return true;
+          }
           return d.type === 'country';
         });
         return false;
@@ -610,67 +684,10 @@ define(['underscore', 'backbone', 'underscoreString'], function(_, Backbone) {
       // var image_source = '';
       var classname = 'marker-bubble';
 
-      if (document.URL.indexOf('force_site_id=3') >= 0) {
-        if (map_data[i].count < 5) {
-          diameter = 20;
-          //image_source = '/app/images/themes/' + theme + '/marker_2.png';
-        } else if ((map_data[i].count >= 5) && (map_data[i].count < 10)) {
-          diameter = 26;
-          //image_source = '/app/images/themes/' + theme + '/marker_3.png';
-        } else if ((map_data[i].count >= 10) && (map_data[i].count < 18)) {
-          diameter = 34;
-          //image_source = '/app/images/themes/' + theme + '/marker_4.png';
-        } else if ((map_data[i].count >= 18) && (map_data[i].count < 30)) {
-          diameter = 42;
-          //image_source = '/app/images/themes/' + theme + '/marker_5.png';
-        } else {
-          diameter = 26;
-          //image_source = '/app/images/themes/' + theme + '/marker_6.png';
-        }
-      } else if (map_type === 'overview_map') {
-        if (map_data[i].count < 25) {
-          diameter = 20;
-          //image_source = '/app/images/themes/' + theme + '/marker_2.png';
-        } else if ((map_data[i].count >= 25) && (map_data[i].count < 50)) {
-          diameter = 26;
-          // image_source = '/app/images/themes/' + theme + '/marker_3.png';
-        } else if ((map_data[i].count >= 50) && (map_data[i].count < 90)) {
-          diameter = 34;
-          // image_source = '/app/images/themes/' + theme + '/marker_4.png';
-        } else if ((map_data[i].count >= 90) && (map_data[i].count < 130)) {
-          diameter = 42;
-          // image_source = '/app/images/themes/' + theme + '/marker_5.png';
-        } else {
-          diameter = 26;
-          // image_source = '/app/images/themes/' + theme + '/marker_6.png';
-        }
-      } else if (map_type === 'administrative_map') {
-        if (map_data[i].count < range) {
-          diameter = 20;
-          // image_source = '/app/images/themes/' + theme + '/marker_2.png';
-        } else if ((map_data[i].count >= range) && (map_data[i].count < (range * 2))) {
-          diameter = 26;
-          // image_source = '/app/images/themes/' + theme + '/marker_3.png';
-        } else if ((map_data[i].count >= (range * 2)) && (map_data[i].count < (range * 3))) {
-          diameter = 34;
-          // image_source = '/app/images/themes/' + theme + '/marker_4.png';
-        } else if ((map_data[i].count >= (range * 3)) && (map_data[i].count < (range * 4))) {
-          diameter = 42;
-          // image_source = '/app/images/themes/' + theme + '/marker_5.png';
-        } else {
-          diameter = 26;
-          // image_source = '/app/images/themes/' + theme + '/marker_6.png';
-        }
-      } else {
-        diameter = 34;
-        classname = 'marker-project-bubble';
-        // image_source = '/app/images/themes/' + theme + '/project_marker.png';
-      }
-
       if (!countriesAndRegions) {
-        new IOMMarker(map_data[i], diameter, classname, map);
+        new IOMMarker(map_data[i], classname, map);
       } else if (countriesAndRegions && !map_data[i].code) {
-        new IOMMarker(map_data[i], diameter, classname, map);
+        new IOMMarker(map_data[i], classname, map);
       }
 
       bounds.extend(new google.maps.LatLng(map_data[i].lat, map_data[i].lon));

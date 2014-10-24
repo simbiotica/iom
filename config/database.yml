@@ -1,22 +1,19 @@
 development:
-  adapter: postgresql
-  template: template_postgis
-  encoding: unicode
+  adapter: postgis
   host: localhost
   database: iom_development
-  username: postgres
-  password:
+  username: dtp
+  password: 
 
 test:
-  adapter: postgresql
-  template: template_postgis
-  encoding: unicode
+  adapter: postgis
+  host: localhost
   database: iom_test
-  username: postgres
-  password:
+  username: dtp
+  password: 
 
 staging:
-  adapter: postgresql
+  adapter: postgis
   template: template_postgis
   encoding: unicode
   database: iom_production
@@ -24,7 +21,7 @@ staging:
   password:
 
 smbtc:
-  adapter: postgresql
+  adapter: postgis
   template: template_postgis
   encoding: unicode
   database: iom_production
@@ -32,7 +29,7 @@ smbtc:
   password:
 
 production:
-  adapter: postgresql
+  adapter: postgis
   template: template_postgis
   encoding: unicode
   host: localhost

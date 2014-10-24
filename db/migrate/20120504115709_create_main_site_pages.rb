@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 class CreateMainSitePages < ActiveRecord::Migration
   def self.up
     MainPage.create(

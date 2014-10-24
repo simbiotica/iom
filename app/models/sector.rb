@@ -2,7 +2,7 @@
 #
 # Table name: sectors
 #
-#  id   :integer         not null, primary key
+#  id   :integer          not null, primary key
 #  name :string(255)
 #
 
@@ -106,6 +106,15 @@ SQL
 
   def projects_for_kml(site)
     sql = "select p.name, ST_AsKML(p.the_geom) as the_geom
+    from projects_sectors as ps
+    inner join projects as p on p.id=ps.project_id and (p.end_date is null OR p.end_date > now())
+    inner join projects_sites as psi on p.id=psi.project_id and psi.site_id=#{site.id}
+    where ps.sector_id=#{self.id}"
+    ActiveRecord::Base.connection.execute(sql)
+  end
+
+  def projects_for_geojson(site)
+    sql = "select p.name, ST_AsGeoJSON(p.the_geom) as the_geom
     from projects_sectors as ps
     inner join projects as p on p.id=ps.project_id and (p.end_date is null OR p.end_date > now())
     inner join projects_sites as psi on p.id=psi.project_id and psi.site_id=#{site.id}

@@ -6,9 +6,8 @@ class GeoregionController < ApplicationController
   skip_before_filter :set_site, :only => [:list_regions1_from_country,:list_regions2_from_country,:list_regions3_from_country]
 
   def show
-    raise NotFound if params[:ids].blank?
-
     ids = params[:ids]
+    ids ||= params[:id]
     raise NotFound unless ids =~ /([\d|\/]+)/
     raise NotFound unless $1.size == ids.size
 
@@ -55,9 +54,9 @@ class GeoregionController < ApplicationController
       @area_parent = ""
 
       if @site.navigate_by_regions?
-        sql="select r.id,count(ps.project_id) as count,r.name,r.center_lon as lon,
+        sql="select r.id,count(distinct ps.project_id) as count,r.name,r.center_lon as lon,
                   r.center_lat as lat,r.name,
-                  CASE WHEN count(ps.project_id) > 1 THEN
+                  CASE WHEN count(distinct ps.project_id) > 1 THEN
                       '/location/'||r.path
                   ELSE
                       '/projects/'||(array_to_string(array_agg(ps.project_id),''))
@@ -69,9 +68,9 @@ class GeoregionController < ApplicationController
                   #{category_join}
                   group by r.id,r.name,lon,lat,r.name,r.path,r.code
                   UNION
-                  select c.id,count(cp.project_id) as count,c.name,c.center_lon as lon, c.center_lat as lat,c.name,
-                  CASE WHEN count(ps.project_id) > 1 THEN
-                  '/location/'||c.id
+                  select c.id,count(distinct cp.project_id) as count,c.name,c.center_lon as lon, c.center_lat as lat,c.name,
+                  CASE WHEN count(distinct ps.project_id) > 1 THEN
+                  '/countries/'||c.id
                   ELSE
                   '/projects/'||(array_to_string(array_agg(ps.project_id),''))
                   END as url,
@@ -83,7 +82,7 @@ class GeoregionController < ApplicationController
       else
         sql="select *
           from(
-          select c.id,count(ps.project_id) as count,c.name,c.center_lon as lon,c.center_lat as lat
+          select c.id,count(distinct ps.project_id) as count,c.name,c.center_lon as lon,c.center_lat as lat
           from (countries_projects as cp
             inner join projects_sites as ps on cp.project_id=ps.project_id and site_id=#{@site.id})
             inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
@@ -95,7 +94,7 @@ class GeoregionController < ApplicationController
     else
       level = 1
       geo_ids[1..-1].each do |geo_id|
-        region = Region.find(geo_id, :select => Region.custom_fields, :conditions => {:level => level, :country_id => country.id})
+        region = Region.find geo_id
         raise NotFound unless region
         @breadcrumb << region unless !@site.send("navigate_by_level#{level}?".to_sym)
         @area = region
@@ -165,6 +164,7 @@ class GeoregionController < ApplicationController
         result = ActiveRecord::Base.connection.execute(sql)
         if @area.is_a?(Country) && @site.navigate_by_regions?
           @map_data = result.map do |r|
+
             uri = URI.parse(r['url'])
             params = Hash[uri.query.split('&').map{|p| p.split('=')}] rescue {}
             params['force_site_id'] = @site.id unless @site.published?
@@ -215,6 +215,14 @@ class GeoregionController < ApplicationController
       format.kml do
         @projects_for_kml = Project.to_kml(@site, projects_custom_find_options)
       end
+      format.json do
+        render :json => Project.to_geojson(@site, projects_custom_find_options).map do |p|
+          { projectName: p['project_name'],
+            geoJSON: p['geojson']
+          }
+        end
+      end
+      
     end
   end
 

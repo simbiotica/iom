@@ -3,9 +3,13 @@
 .ruby-version
 doc/
 db/*.sqlite3
+db/data/*.csv
+db/data/*sql
+db/data/masteradminmap/
 log/*.log
 tmp/**/*
 public/system
+public/dist
 bin/
 install/
 config/app_config.yml
@@ -16,7 +20,5 @@ update/
 .sass-cache
 node_modules
 public/.tmp
-public/dist
-public/app/vendor
 
 app/views_old

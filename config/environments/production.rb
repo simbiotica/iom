@@ -25,7 +25,12 @@ Iom::Application.configure do
   # config.logger = SyslogLogger.new
 
   # Use a different cache store in production
-  config.cache_store = :mem_cache_store
+  ENV["MEMCACHE_SERVERS"] = ENV["MEMCACHIER_SERVERS"]
+  ENV["MEMCACHE_USERNAME"] = ENV["MEMCACHIER_USERNAME"]
+  ENV["MEMCACHE_PASSWORD"] = ENV["MEMCACHIER_PASSWORD"]
+  config.cache_store = :dalli_store, ENV["MEMCACHIER_SERVERS"].split(','),
+                        { :username => ENV["MEMCACHIER_USERNAME"],
+                          :password => ENV["MEMCACHIER_PASSWORD"] }
 
   # Disable Rails's static asset server
   # In production, Apache or nginx will already do this

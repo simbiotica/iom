@@ -1,3 +1,13 @@
+# == Schema Information
+#
+# Table name: projects_synchronizations
+#
+#  id                 :integer          not null, primary key
+#  projects_file_data :text
+#  created_at         :datetime
+#  updated_at         :datetime
+#
+
 class ProjectsSynchronization < ActiveRecord::Base
 
   REQUIRED_HEADERS = %w(organization project_name project_description start_date end_date sectors location)

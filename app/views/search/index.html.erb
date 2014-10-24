@@ -123,7 +123,7 @@
                     <p>
                       <% regions = project['regions'] ? project['regions'].text2array : [] %>
                       <% regions.slice!(0, 2).each do |region| %>
-                          <%= "#{region}, #{project['countries'].text2array}"%>
+                          <%= "#{region}, #{project['countries'].text2array.first}"%>
                       <% end %>
                       <% if regions.count > 0 %>and <%= content_tag :span, "#{regions.count} more" %><% end %>
                     </p>

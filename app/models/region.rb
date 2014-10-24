@@ -2,7 +2,7 @@
 #
 # Table name: regions
 #
-#  id               :integer         not null, primary key
+#  id               :integer          not null, primary key
 #  name             :string(255)
 #  level            :integer
 #  country_id       :integer
@@ -10,7 +10,7 @@
 #  center_lat       :float
 #  center_lon       :float
 #  path             :string(255)
-#  the_geom         :string
+#  the_geom         :string           geometry, 4326
 #  gadm_id          :integer
 #  wiki_url         :string(255)
 #  wiki_description :text
@@ -29,6 +29,10 @@ class Region < ActiveRecord::Base
   before_save :update_wikipedia_description
 
   after_save :set_path
+
+  def self.find_by_name_insensitive( name )
+    where('lower(name) = lower(?)', name).first
+  end
 
   def self.custom_fields
     (columns.map{ |c| c.name } - ['the_geom']).map{ |c| "#{self.table_name}.#{c}" }
@@ -134,7 +138,7 @@ class Region < ActiveRecord::Base
         (select re.id, re.name, re.level, re.country_id, re.parent_region_id, re.path,
              ST_Distance((select ST_Centroid(the_geom) from regions where id=#{self.id}), ST_Centroid(the_geom)) as dist,
              (
-              select count(*) from projects_regions as pr
+              select count(distinct pr.project_id) from projects_regions as pr
               inner join projects as p on p.id=pr.project_id and (p.end_date is null OR p.end_date > now())
               where region_id=re.id
             ) as count
@@ -154,7 +158,7 @@ SQL
         select * from
         (select re.id, re.name, re.level, re.country_id, re.parent_region_id, re.path,
              ST_Distance((select ST_Centroid(the_geom) from regions where id=#{self.id}), ST_Centroid(the_geom)) as dist,
-             (select count(*) from projects_regions as pr
+             (select count(distinct pr.project_id) from projects_regions as pr
               inner join projects as p on p.id=pr.project_id and (p.end_date is null OR p.end_date > now())
                where region_id=re.id) as count
              from regions as re
@@ -205,6 +209,16 @@ SQL
     where pr.region_id=#{self.id}"
     ActiveRecord::Base.connection.execute(sql)
   end
+
+  def projects_for_geojson(site)
+    sql = "select p.name, ST_AsGeoJSON(p.the_geom) as the_geom
+    from projects_regions as pr
+    inner join projects_sites as ps on pr.project_id=ps.project_id and ps.site_id=#{site.id}
+    inner join projects as p on ps.project_id=p.id and (p.end_date is null OR p.end_date > now())
+    where pr.region_id=#{self.id}"
+    ActiveRecord::Base.connection.execute(sql)
+  end
+
 
   def to_param
     self.path

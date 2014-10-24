@@ -1,3 +1,55 @@
+# == Schema Information
+#
+# Table name: sites
+#
+#  id                              :integer          not null, primary key
+#  name                            :string(255)
+#  short_description               :text
+#  long_description                :text
+#  contact_email                   :string(255)
+#  contact_person                  :string(255)
+#  url                             :string(255)
+#  permalink                       :string(255)
+#  google_analytics_id             :string(255)
+#  logo_file_name                  :string(255)
+#  logo_content_type               :string(255)
+#  logo_file_size                  :integer
+#  logo_updated_at                 :datetime
+#  theme_id                        :integer
+#  blog_url                        :string(255)
+#  word_for_clusters               :string(255)
+#  word_for_regions                :string(255)
+#  show_global_donations_raises    :boolean          default(FALSE)
+#  project_classification          :integer          default(0)
+#  geographic_context_country_id   :integer
+#  geographic_context_region_id    :integer
+#  project_context_cluster_id      :integer
+#  project_context_sector_id       :integer
+#  project_context_organization_id :integer
+#  project_context_tags            :string(255)
+#  created_at                      :datetime
+#  updated_at                      :datetime
+#  geographic_context_geometry     :string           geometry, 4326
+#  project_context_tags_ids        :string(255)
+#  status                          :boolean          default(FALSE)
+#  visits                          :float            default(0.0)
+#  visits_last_week                :float            default(0.0)
+#  aid_map_image_file_name         :string(255)
+#  aid_map_image_content_type      :string(255)
+#  aid_map_image_file_size         :integer
+#  aid_map_image_updated_at        :datetime
+#  navigate_by_country             :boolean          default(FALSE)
+#  navigate_by_level1              :boolean          default(FALSE)
+#  navigate_by_level2              :boolean          default(FALSE)
+#  navigate_by_level3              :boolean          default(FALSE)
+#  map_styles                      :text
+#  overview_map_lat                :float
+#  overview_map_lon                :float
+#  overview_map_zoom               :integer
+#  internal_description            :text
+#  featured                        :boolean          default(FALSE)
+#
+
 require File.expand_path('../../test_helper', __FILE__)
 
 class SiteTest < ActiveSupport::TestCase
@@ -106,6 +158,15 @@ class SiteTest < ActiveSupport::TestCase
   end
 
   test "Given a site contextualized in a country and some projects in some regions the projects in the site should those in the same level of the site" do
+
+    # the description of this test is vague and appears to refer to functionality that is
+    # completely unimplemented, so I'm skipping it for now
+    #
+    # we need to figure out exactly how this behavior should work; e.g., what should happen if a project
+    # covers multiple regions with different levels?
+    pending
+    # - dtp 9/18/14
+
     spain    = create_country :name => 'Spain'
     valencia  = create_region :name => 'Valencia',  :country => spain, :level => 1
     catalonia = create_region :name => 'Catalonia', :country => spain, :level => 1
@@ -138,7 +199,6 @@ class SiteTest < ActiveSupport::TestCase
 
     assert_equal 1, site.cached_projects.size
     assert site.cached_projects.include?(p1)
-
   end
 
   test "Destroy a project should remove it from projects_sites" do

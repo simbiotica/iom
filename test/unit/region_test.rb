@@ -1,3 +1,24 @@
+# == Schema Information
+#
+# Table name: regions
+#
+#  id               :integer          not null, primary key
+#  name             :string(255)
+#  level            :integer
+#  country_id       :integer
+#  parent_region_id :integer
+#  center_lat       :float
+#  center_lon       :float
+#  path             :string(255)
+#  the_geom         :string           geometry, 4326
+#  gadm_id          :integer
+#  wiki_url         :string(255)
+#  wiki_description :text
+#  code             :string(255)
+#  the_geom_geojson :text
+#  ia_name          :text
+#
+
 require File.expand_path('../../test_helper', __FILE__)
 
 class RegionTest < ActiveSupport::TestCase

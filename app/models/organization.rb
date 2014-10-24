@@ -2,7 +2,7 @@
 #
 # Table name: organizations
 #
-#  id                              :integer         not null, primary key
+#  id                              :integer          not null, primary key
 #  name                            :string(255)
 #  description                     :text
 #  budget                          :float
@@ -49,13 +49,22 @@
 #  media_contact_position          :string(255)
 #  media_contact_phone_number      :string(255)
 #  media_contact_email             :string(255)
+#  main_data_contact_name          :string(255)
+#  main_data_contact_position      :string(255)
+#  main_data_contact_phone_number  :string(255)
+#  main_data_contact_email         :string(255)
+#  main_data_contact_zip           :string(255)
+#  main_data_contact_city          :string(255)
+#  main_data_contact_state         :string(255)
+#  main_data_contact_country       :string(255)
+#  organization_id                 :string(255)
 #
 
 class Organization < ActiveRecord::Base
   include ModelChangesRecorder
 
-  has_many :resources, :conditions => 'resources.element_type = #{Iom::ActsAsResource::ORGANIZATION_TYPE}', :foreign_key => :element_id, :dependent => :destroy
-  has_many :media_resources, :conditions => 'media_resources.element_type = #{Iom::ActsAsResource::ORGANIZATION_TYPE}', :foreign_key => :element_id, :dependent => :destroy, :order => 'position ASC'
+  has_many :resources, :conditions => "resources.element_type = #{Iom::ActsAsResource::ORGANIZATION_TYPE}", :foreign_key => :element_id, :dependent => :destroy
+  has_many :media_resources, :conditions => "media_resources.element_type = #{Iom::ActsAsResource::ORGANIZATION_TYPE}", :foreign_key => :element_id, :dependent => :destroy, :order => 'position ASC'
   has_many :projects, :foreign_key => :primary_organization_id
 
   has_attached_file :logo, :styles => {
@@ -84,8 +93,6 @@ class Organization < ActiveRecord::Base
   validates_format_of :twitter, :with => /^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/ix, :message => "URL is invalid (your changes were not saved). Make sure the web address begins with 'http://' or 'https://'.", :allow_blank => true, :if => :twitter_changed?
 
   validates_presence_of :name
-  validates_uniqueness_of :organization_id
-
 
   serialize :site_specific_information
 
@@ -309,6 +316,14 @@ SQL
 
   def projects_for_kml(site)
     sql = "select p.name, ST_AsKML(p.the_geom) as the_geom
+    from projects as p
+    inner join projects_sites as ps on p.id=ps.project_id and ps.site_id=#{site.id}
+    where p.primary_organization_id=#{self.id} and (p.end_date is null OR p.end_date > now())"
+    ActiveRecord::Base.connection.execute(sql)
+  end
+
+  def projects_for_geojson(site)
+    sql = "select p.name, ST_AsGeoJSON(p.the_geom) as the_geom
     from projects as p
     inner join projects_sites as ps on p.id=ps.project_id and ps.site_id=#{site.id}
     where p.primary_organization_id=#{self.id} and (p.end_date is null OR p.end_date > now())"

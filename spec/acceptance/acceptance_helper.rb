@@ -31,19 +31,19 @@ RSpec.configure do |config|
     #    stub(u).delete_attached_files {true}
     #  end
     any_instance_of(Paperclip::Attachment, :post_process => true)
-    Capybara.current_driver = :selenium
+    Capybara.current_driver = :selenium #if example.metadata[:js]
   end
 
   config.after(:each) do
     case page.driver.class
-    when Capybara::Driver::RackTest
+    when Capybara::RackTest::Driver
       page.driver.rack_mock_session.clear_cookies
-    when Capybara::Driver::Culerity
-      page.driver.browser.clear_cookies
-    when Capybara::Driver::Selenium
+#    when Capybara::Driver::Culerity
+#      page.driver.browser.clear_cookies
+    when Capybara::Selenium::Driver
       page.driver.cleanup!
     end
-    Capybara.use_default_driver
+    Capybara.use_default_driver #if example.metadata[:js]
   end
 
 end

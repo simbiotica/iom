@@ -10,5 +10,10 @@ namespace :iom do
       end
     end
 
+    desc 'Regenerates the physical caches of project information for all sites'
+    task :regenerate_caches => :environment do
+      Site.all.each { |s| s.set_cached_projects }
+    end
+
   end
 end

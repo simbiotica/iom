@@ -9,7 +9,7 @@
     <% else %>
     var map_center = [];
     <% end %>
-    var map_zoom = <%= @site.overview_map_zoom %>;
+    var map_zoom = <%= @site.overview_map_zoom || "null" %>;
     var chco = '<%= @overview_map_chco %>';
     var chf = '<%= @overview_map_chf %>';
     var chld = '<%= @chld %>';
@@ -191,11 +191,15 @@
             </div>
           <% end %>
 
-          <% if @project.activities || @project.additional_information || @project.cross_cutting_issues || (@locations.present? && @locations.to_a.join.present?)%>
+          <% if @project.activities.present? || @project.additional_information || @project.cross_cutting_issues || (@locations.present? && @locations.to_a.join.present?)%>
             <section>
-              <%unless @project.activities.blank? %>
+              <%unless @project.activities.empty? %>
                 <h2>Activities</h2>
-                <p> <%= raw(@project.activities) %> </p>
+                <ul>
+                  <% @project.activities.each do |activity| %>
+                    <li><%=activity.name %> </li>
+                  <% end %>
+                </ul>
               <%end%>
               <%unless @project.additional_information.blank? %>
                 <h3 class="<%= (@project.activities.blank?)? 'first':''%>">Additional information</h3>
@@ -222,6 +226,32 @@
                     <% else %>
                       <li><%= location['name'] %></li>
                     <% end %>
+                  <% end %>
+                </ul>
+              <%end%>
+            </section>
+          <% end %>
+
+          <% if @project.diseases.present? %>
+            <section>
+              <%unless @project.diseases.empty? %>
+                <h2>Diseases</h2>
+                <ul>
+                  <% @project.diseases.each do |disease| %>
+                    <li><%=disease.name %> </li>
+                  <% end %>
+                </ul>
+              <%end%>
+            </section>
+          <% end %>
+
+          <% if @project.medicines.present? %>
+            <section>
+              <%unless @project.medicines.empty? %>
+                <h2>Medicines</h2>
+                <ul>
+                  <% @project.medicines.each do |medicine| %>
+                    <li><%=medicine.name %> </li>
                   <% end %>
                 </ul>
               <%end%>

@@ -2,7 +2,7 @@ module Iom
   module Data
 
     def default_user_attributes
-      {:email => 'admin@example.com', :password => 'admin', :password_confirmation => 'admin'}
+      {:email => 'admin@example.com', :password => 'admin', :password_confirmation => 'admin', :name => "Adam Minn"}
     end
 
     def new_user(attributes = {})

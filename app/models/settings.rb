@@ -2,8 +2,8 @@
 #
 # Table name: settings
 #
-#  id   :integer         not null, primary key
-#  data :text            
+#  id   :integer          not null, primary key
+#  data :text
 #
 
 class Settings < ActiveRecord::Base
@@ -15,7 +15,7 @@ class Settings < ActiveRecord::Base
   end
   
   def self.main_site_host
-    first.data[:main_site_host]
+    first.present? ? first.data[:main_site_host] : nil
   end
   
 end

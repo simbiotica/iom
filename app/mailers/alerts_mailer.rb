@@ -20,6 +20,7 @@ class AlertsMailer < ActionMailer::Base
     mail(:to => user.email, :cc => cc, :subject => "NGO Aid Map - We Miss You!")
   end
 
+=begin
   if Rails.env.development?
     class Preview < MailView
 
@@ -47,4 +48,6 @@ class AlertsMailer < ActionMailer::Base
       end
     end
   end
+=end
+
 end

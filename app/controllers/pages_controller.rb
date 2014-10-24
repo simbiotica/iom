@@ -19,8 +19,7 @@ class PagesController < ApplicationController
 
   def pages
     return @site.pages if @site.present?
-    @pages = MainPage.published.order('order_index asc').all
-    MainPage
+    @pages = MainPage.order('order_index asc')
   end
   private :pages
 end

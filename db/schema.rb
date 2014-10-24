@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,14 +11,26 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140530130528) do
+ActiveRecord::Schema.define(:version => 20140924214461) do
+
+  create_table "activities", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "audiences", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "changes_history_records", :force => true do |t|
     t.integer  "user_id"
     t.datetime "when"
     t.text     "how"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                          :null => false
+    t.datetime "updated_at",                          :null => false
     t.integer  "what_id"
     t.string   "what_type"
     t.boolean  "reviewed",         :default => false
@@ -26,20 +39,6 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
   end
 
   add_index "changes_history_records", ["user_id", "what_type", "when"], :name => "index_changes_history_records_on_user_id_and_what_type_and_when"
-
-  create_table "changes_history_records_copy", :id => false, :force => true do |t|
-    t.integer  "id",               :null => false
-    t.integer  "user_id"
-    t.datetime "when"
-    t.text     "how"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "what_id"
-    t.string   "what_type"
-    t.boolean  "reviewed"
-    t.string   "who_email"
-    t.string   "who_organization"
-  end
 
   create_table "clusters", :force => true do |t|
     t.string "name"
@@ -54,23 +53,24 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
   add_index "clusters_projects", ["project_id"], :name => "index_clusters_projects_on_project_id"
 
   create_table "countries", :force => true do |t|
-    t.string        "name"
-    t.string        "code"
-    t.multi_polygon "the_geom",         :limit => nil, :srid => 4326
-    t.string        "wiki_url"
-    t.text          "wiki_description"
-    t.string        "iso2_code"
-    t.string        "iso3_code"
-    t.float         "center_lat"
-    t.float         "center_lon"
-    t.text          "the_geom_geojson"
+    t.string  "name"
+    t.string  "code"
+    t.float   "center_lat"
+    t.float   "center_lon"
+    t.spatial "the_geom",         :limit => {:srid=>4326, :type=>"multi_polygon"}
+    t.string  "wiki_url"
+    t.text    "wiki_description"
+    t.string  "iso2_code"
+    t.string  "iso3_code"
+    t.text    "the_geom_geojson"
   end
 
+  add_index "countries", ["name"], :name => "index_countries_on_name"
   add_index "countries", ["the_geom"], :name => "index_countries_on_the_geom", :spatial => true
 
   create_table "countries_projects", :id => false, :force => true do |t|
-    t.integer "country_id", :null => false
-    t.integer "project_id", :null => false
+    t.integer "country_id"
+    t.integer "project_id"
   end
 
   add_index "countries_projects", ["country_id"], :name => "index_countries_projects_on_country_id"
@@ -96,56 +96,34 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.integer  "site_id"
     t.datetime "created_at"
     t.date     "start_date"
+    t.text     "activities"
+    t.string   "activities_ids",      :limit => nil
+    t.text     "audiences"
+    t.string   "audiences_ids",       :limit => nil
+    t.text     "diseases"
+    t.string   "diseases_ids",        :limit => nil
   end
 
-  add_index "data_denormalization", ["cluster_ids"], :name => "data_denormalization_cluster_idsx"
-  add_index "data_denormalization", ["countries_ids"], :name => "data_denormalization_countries_idsx"
-  add_index "data_denormalization", ["donors_ids"], :name => "data_denormalization_donors_idsx"
-  add_index "data_denormalization", ["is_active"], :name => "data_denormalization_is_activex"
-  add_index "data_denormalization", ["organization_id"], :name => "data_denormalization_organization_idx"
-  add_index "data_denormalization", ["organization_name"], :name => "data_denormalization_organization_namex"
-  add_index "data_denormalization", ["project_id"], :name => "data_denormalization_project_idx"
-  add_index "data_denormalization", ["project_name"], :name => "data_denormalization_project_name_idx"
-  add_index "data_denormalization", ["regions_ids"], :name => "data_denormalization_regions_idsx"
-  add_index "data_denormalization", ["sector_ids"], :name => "data_denormalization_sector_idsx"
-  add_index "data_denormalization", ["site_id"], :name => "data_denormalization_site_idx"
+  add_index "data_denormalization", ["created_at"], :name => "index_data_denormalization_on_created_at"
+  add_index "data_denormalization", ["is_active"], :name => "index_data_denormalization_on_is_active"
+  add_index "data_denormalization", ["organization_id"], :name => "index_data_denormalization_on_organization_id"
+  add_index "data_denormalization", ["project_id"], :name => "index_data_denormalization_on_project_id"
+  add_index "data_denormalization", ["project_name"], :name => "index_data_denormalization_on_project_name"
+  add_index "data_denormalization", ["site_id"], :name => "index_data_denormalization_on_site_id"
 
-  create_table "data_export", :id => false, :force => true do |t|
+  create_table "diseases", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "diseases_projects", :id => false, :force => true do |t|
+    t.integer "disease_id"
     t.integer "project_id"
-    t.string  "project_name",                            :limit => 2000
-    t.text    "project_description"
-    t.integer "organization_id"
-    t.string  "organization_name",                       :limit => 2000
-    t.text    "implementing_organization"
-    t.text    "partner_organizations"
-    t.text    "cross_cutting_issues"
-    t.date    "start_date"
-    t.date    "end_date"
-    t.float   "budget"
-    t.text    "target"
-    t.integer "estimated_people_reached",                :limit => 8
-    t.string  "project_contact_person"
-    t.string  "project_contact_email"
-    t.string  "project_contact_phone_number"
-    t.text    "activities"
-    t.string  "intervention_id"
-    t.text    "additional_information"
-    t.string  "awardee_type"
-    t.date    "date_provided"
-    t.date    "date_updated"
-    t.string  "project_contact_position"
-    t.string  "project_website"
-    t.text    "verbatim_location"
-    t.text    "calculation_of_number_of_people_reached"
-    t.text    "project_needs"
-    t.text    "sectors"
-    t.text    "clusters"
-    t.text    "project_tags"
-    t.text    "countries"
-    t.text    "regions_level1"
-    t.text    "regions_level2"
-    t.text    "regions_level3"
   end
+
+  add_index "diseases_projects", ["disease_id"], :name => "index_diseases_projects_on_disease_id"
+  add_index "diseases_projects", ["project_id"], :name => "index_diseases_projects_on_project_id"
 
   create_table "donations", :force => true do |t|
     t.integer "donor_id"
@@ -174,8 +152,8 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.integer  "logo_file_size"
     t.datetime "logo_updated_at"
     t.text     "site_specific_information"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                :null => false
+    t.datetime "updated_at",                                :null => false
   end
 
   add_index "donors", ["name"], :name => "index_donors_on_name"
@@ -209,8 +187,8 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.datetime "picture_updated_at"
     t.string   "video_url"
     t.text     "video_embed_html"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                              :null => false
+    t.datetime "updated_at",                              :null => false
     t.string   "caption"
     t.string   "video_thumb_file_name"
     t.string   "video_thumb_content_type"
@@ -220,11 +198,25 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
 
   add_index "media_resources", ["element_type", "element_id"], :name => "index_media_resources_on_element_type_and_element_id"
 
+  create_table "medicines", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "medicines_projects", :id => false, :force => true do |t|
+    t.integer "medicine_id"
+    t.integer "project_id"
+  end
+
+  add_index "medicines_projects", ["medicine_id"], :name => "index_medicines_projects_on_medicine_id"
+  add_index "medicines_projects", ["project_id"], :name => "index_medicines_projects_on_project_id"
+
   create_table "offices", :force => true do |t|
     t.integer  "donor_id"
     t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "organizations", :force => true do |t|
@@ -245,8 +237,8 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.string   "donation_phone_number"
     t.string   "donation_website"
     t.text     "site_specific_information"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                      :null => false
+    t.datetime "updated_at",                      :null => false
     t.string   "logo_file_name"
     t.string   "logo_content_type"
     t.integer  "logo_file_size"
@@ -287,57 +279,6 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
 
   add_index "organizations", ["name"], :name => "index_organizations_on_name"
 
-  create_table "organizations2", :force => true do |t|
-    t.string   "name"
-    t.text     "description"
-    t.float    "budget"
-    t.string   "website"
-    t.integer  "national_staff"
-    t.string   "twitter"
-    t.string   "facebook"
-    t.string   "hq_address"
-    t.string   "contact_email"
-    t.string   "contact_phone_number"
-    t.string   "donation_address"
-    t.string   "zip_code"
-    t.string   "city"
-    t.string   "state"
-    t.string   "donation_phone_number"
-    t.string   "donation_website"
-    t.text     "site_specific_information"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "logo_file_name"
-    t.string   "logo_content_type"
-    t.integer  "logo_file_size"
-    t.datetime "logo_updated_at"
-    t.string   "international_staff"
-    t.string   "contact_name"
-    t.string   "contact_position"
-    t.string   "contact_zip"
-    t.string   "contact_city"
-    t.string   "contact_state"
-    t.string   "contact_country"
-    t.string   "donation_country"
-    t.integer  "estimated_people_reached"
-    t.float    "private_funding"
-    t.float    "usg_funding"
-    t.float    "other_funding"
-    t.float    "private_funding_spent"
-    t.float    "usg_funding_spent"
-    t.float    "other_funding_spent"
-    t.float    "spent_funding_on_relief"
-    t.float    "spent_funding_on_reconstruction"
-    t.integer  "percen_relief"
-    t.integer  "percen_reconstruction"
-    t.string   "media_contact_name"
-    t.string   "media_contact_position"
-    t.string   "media_contact_phone_number"
-    t.string   "media_contact_email"
-  end
-
-  add_index "organizations2", ["name"], :name => "index_organizations2_on_name"
-
   create_table "organizations_projects", :id => false, :force => true do |t|
     t.integer "organization_id"
     t.integer "project_id"
@@ -352,8 +293,8 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.integer  "site_id"
     t.boolean  "published"
     t.string   "permalink"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
     t.integer  "parent_id"
     t.integer  "order_index"
   end
@@ -370,8 +311,8 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.string   "logo_content_type"
     t.integer  "logo_file_size"
     t.datetime "logo_updated_at"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
     t.string   "label"
   end
 
@@ -393,9 +334,9 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.string   "contact_email"
     t.string   "contact_phone_number"
     t.text     "site_specific_information"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.geometry "the_geom",                                :limit => nil,  :srid => 4326
+    t.datetime "created_at",                                                                          :null => false
+    t.datetime "updated_at",                                                                          :null => false
+    t.spatial  "the_geom",                                :limit => {:srid=>4326, :type=>"geometry"}
     t.text     "activities"
     t.string   "intervention_id"
     t.text     "additional_information"
@@ -415,6 +356,22 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
   add_index "projects", ["name"], :name => "index_projects_on_name"
   add_index "projects", ["primary_organization_id"], :name => "index_projects_on_primary_organization_id"
   add_index "projects", ["the_geom"], :name => "index_projects_on_the_geom", :spatial => true
+
+  create_table "projects_activities", :id => false, :force => true do |t|
+    t.integer "activity_id"
+    t.integer "project_id"
+  end
+
+  add_index "projects_activities", ["activity_id"], :name => "index_projects_activities_on_activity_id"
+  add_index "projects_activities", ["project_id"], :name => "index_projects_activities_on_project_id"
+
+  create_table "projects_audiences", :id => false, :force => true do |t|
+    t.integer "audience_id"
+    t.integer "project_id"
+  end
+
+  add_index "projects_audiences", ["audience_id"], :name => "index_projects_audiences_on_audience_id"
+  add_index "projects_audiences", ["project_id"], :name => "index_projects_audiences_on_project_id"
 
   create_table "projects_regions", :id => false, :force => true do |t|
     t.integer "region_id"
@@ -443,8 +400,8 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
 
   create_table "projects_synchronizations", :force => true do |t|
     t.text     "projects_file_data"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
   end
 
   create_table "projects_tags", :id => false, :force => true do |t|
@@ -456,24 +413,25 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
   add_index "projects_tags", ["tag_id"], :name => "index_projects_tags_on_tag_id"
 
   create_table "regions", :force => true do |t|
-    t.string   "name"
-    t.integer  "level"
-    t.integer  "country_id"
-    t.integer  "parent_region_id"
-    t.geometry "the_geom",         :limit => nil, :srid => 4326
-    t.integer  "gadm_id"
-    t.string   "wiki_url"
-    t.text     "wiki_description"
-    t.string   "code"
-    t.float    "center_lat"
-    t.float    "center_lon"
-    t.text     "the_geom_geojson"
-    t.text     "ia_name"
-    t.string   "path"
+    t.string  "name"
+    t.integer "level"
+    t.integer "country_id"
+    t.integer "parent_region_id"
+    t.float   "center_lat"
+    t.float   "center_lon"
+    t.string  "path"
+    t.spatial "the_geom",         :limit => {:srid=>4326, :type=>"geometry"}
+    t.integer "gadm_id"
+    t.string  "wiki_url"
+    t.text    "wiki_description"
+    t.string  "code"
+    t.text    "the_geom_geojson"
+    t.text    "ia_name"
   end
 
   add_index "regions", ["country_id"], :name => "index_regions_on_country_id"
   add_index "regions", ["level"], :name => "index_regions_on_level"
+  add_index "regions", ["name"], :name => "index_regions_on_name"
   add_index "regions", ["parent_region_id"], :name => "index_regions_on_parent_region_id"
   add_index "regions", ["the_geom"], :name => "index_regions_on_the_geom", :spatial => true
 
@@ -482,8 +440,8 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.string   "url"
     t.integer  "element_id"
     t.integer  "element_type"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
     t.text     "site_specific_information"
   end
 
@@ -524,35 +482,35 @@ ActiveRecord::Schema.define(:version => 20140530130528) do
     t.string   "blog_url"
     t.string   "word_for_clusters"
     t.string   "word_for_regions"
-    t.boolean  "show_global_donations_raises",                   :default => false
-    t.integer  "project_classification",                         :default => 0
+    t.boolean  "show_global_donations_raises",                                                :default => false
+    t.integer  "project_classification",                                                      :default => 0
     t.integer  "geographic_context_country_id"
     t.integer  "geographic_context_region_id"
     t.integer  "project_context_cluster_id"
     t.integer  "project_context_sector_id"
     t.integer  "project_context_organization_id"
     t.string   "project_context_tags"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.geometry "geographic_context_geometry",     :limit => nil,                    :srid => 4326
+    t.datetime "created_at",                                                                                     :null => false
+    t.datetime "updated_at",                                                                                     :null => false
+    t.spatial  "geographic_context_geometry",     :limit => {:srid=>4326, :type=>"geometry"}
     t.string   "project_context_tags_ids"
-    t.boolean  "status",                                         :default => false
-    t.float    "visits",                                         :default => 0.0
-    t.float    "visits_last_week",                               :default => 0.0
+    t.boolean  "status",                                                                      :default => false
+    t.float    "visits",                                                                      :default => 0.0
+    t.float    "visits_last_week",                                                            :default => 0.0
     t.string   "aid_map_image_file_name"
     t.string   "aid_map_image_content_type"
     t.integer  "aid_map_image_file_size"
     t.datetime "aid_map_image_updated_at"
-    t.boolean  "navigate_by_country",                            :default => false
-    t.boolean  "navigate_by_level1",                             :default => false
-    t.boolean  "navigate_by_level2",                             :default => false
-    t.boolean  "navigate_by_level3",                             :default => false
+    t.boolean  "navigate_by_country",                                                         :default => false
+    t.boolean  "navigate_by_level1",                                                          :default => false
+    t.boolean  "navigate_by_level2",                                                          :default => false
+    t.boolean  "navigate_by_level3",                                                          :default => false
     t.text     "map_styles"
     t.float    "overview_map_lat"
     t.float    "overview_map_lon"
     t.integer  "overview_map_zoom"
     t.text     "internal_description"
-    t.boolean  "featured",                                       :default => false
+    t.boolean  "featured",                                                                    :default => false
   end
 
   add_index "sites", ["geographic_context_geometry"], :name => "index_sites_on_geographic_context_geometry", :spatial => true

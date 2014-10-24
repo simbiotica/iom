@@ -79,11 +79,17 @@ module ModelChangesRecorder
   module ClassMethods
 
     def has_many(association_name, options = {}, &block)
-      super(association_name, options.merge(:after_add => :record_new_associated_object, :after_remove => :record_deleted_associated_object), &block)
+      options[:after_add]    = [options[:after_add], :record_new_associated_object].compact.flatten
+      options[:after_remove] = [options[:after_remove], :record_deleted_associated_object].compact.flatten
+
+      super(association_name, options, &block)
     end
 
     def has_and_belongs_to_many(association_name, options = {}, &block)
-      super(association_name, options.merge(:after_add => :record_new_associated_object, :after_remove => :record_deleted_associated_object), &block)
+      options[:after_add]    = [options[:after_add], :record_new_associated_object].compact.flatten
+      options[:after_remove] = [options[:after_remove], :record_deleted_associated_object].compact.flatten
+
+      super(association_name, options, &block)
     end
   end
 

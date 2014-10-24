@@ -1,6 +1,6 @@
 module HelperMethods
   def login_as_administrator
-    create_user
+    create_user(name: "User")
     visit '/login'
     within(:xpath, "//form[@action='/session']") do
       fill_in 'email', :with => default_user_attributes[:email]
