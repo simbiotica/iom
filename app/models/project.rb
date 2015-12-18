@@ -132,7 +132,7 @@ class Project < ActiveRecord::Base
   end
 
   def budget=(ammount)
-    if amount.present?
+    if ammount.present?
       case ammount
         when String then write_attribute(:budget, ammount.delete(',').to_f)
         else             write_attribute(:budget, ammount)
