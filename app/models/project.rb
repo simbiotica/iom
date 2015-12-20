@@ -1123,10 +1123,10 @@ SQL
 
     if @prime_awardee_name.present? && (prime_awardee = Organization.where('lower(trim(name)) = lower(trim(?))', @prime_awardee_name).first) && prime_awardee.present?
       self.prime_awardee_id = prime_awardee.id
-    elsif @prime_awardee_name.present? && prime_awardee != nil
+    elsif @prime_awardee_name.present? && @prime_awardee_name != ""
       self.errors.add(:prime_awardee, %Q{"#{@prime_awardee_name}" doesn't exist})
-    else
-      self.prime_awardee_id = nil
+    elsif @prime_awardee_name == ""
+      self.prime_awardee = nil
     end
 
 
