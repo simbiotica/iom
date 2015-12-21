@@ -93,7 +93,7 @@ class Project < ActiveRecord::Base
   end
 
   def nullify_budget
-    if self.budget.blank? || self.budget == 0 || self.budget == ''
+    if self.budget.blank? || self.budget.to_f == 0 || self.budget == ''
       self.budget = nil
     end
   end
@@ -135,7 +135,11 @@ class Project < ActiveRecord::Base
     if ammount.present?
       case ammount
         when String then write_attribute(:budget, ammount.delete(',').to_f)
-        else             write_attribute(:budget, ammount)
+        else
+          if amount.to_f == 0
+            amount = nil
+          end
+          write_attribute(:budget, ammount)
       end
     end
   end
@@ -1054,7 +1058,7 @@ SQL
     @donors_sync = value || []
   end
 
-  def geographical_scope_sync=(value)
+  def geographic_scope_sync=(value)
     @geographical_scope_sync = value || 'specific_locations'
   end
 
@@ -1181,8 +1185,9 @@ SQL
     end
 
     if @geographical_scope_sync
-      if @geographical_scope_sync != 'global' || @regional_scope != 'regional' || @regional_scope != 'specific_locations'
-        self.sync_errors << "Incorrect geographical scope on row #@sync_line"
+      puts "************************************************************************************#{@geographical_scope_sync}"
+      if !%w{global national specific_locations}.include? @geographical_scope_sync
+        self.sync_errors << "Incorrect geographic scope on row #@sync_line"
       else
         if @geographical_scope_sync == 'global'
           self.geolocations.clear
