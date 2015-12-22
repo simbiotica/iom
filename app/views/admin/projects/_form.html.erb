@@ -524,7 +524,7 @@
   <div class="field">
     <label>PROJECT REACH UNIT</label>
     <span class="input_short">
-      <%= f.text_field :project_reach_unit %>
+      <%= f.text_field :project_reach_unit, :value => lambda{@project.project_reach_unit.present? ? @project.project_reach_unit : 'individuals'}.call %>
     </span>
   </div>
   <div class="field">

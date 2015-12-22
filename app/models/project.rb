@@ -99,7 +99,7 @@ class Project < ActiveRecord::Base
   end
 
   def set_budget_value_date
-    self.budget_value_date = self.start_date unless self.budget_value_date.present? || self.start_date.blank?
+    self.budget_value_date = self.start_date if !self.budget_value_date.present? && self.start_date.pesent?
   end
 
   def strip_urls
@@ -946,7 +946,7 @@ SQL
     if value.present?
       self.budget_value_date = value
     else
-      self.budget_value_date = self.start_date unless self.start_date.blank?
+      self.budget_value_date = self.start_date if self.start_date.present?
     end
   end
 

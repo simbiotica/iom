@@ -69,7 +69,11 @@
       </h2>
       <span class="buttons">
         <a class="add_project museo_sans shadow_green" href="<%= new_admin_project_path %>">New project</a>
-        <a class="import_csv museo_sans shadow_black" href="<%= admin_export_projects_path(:format => 'xls') %>">Export projects</a>
+        <% unless current_user.admin? || current_user.organization.blank? %>
+          <a class="import_csv museo_sans shadow_black" href="http://ngoaidmap.org/downloads?format=csv&v=full&name=<%= current_user.organization.name %>_export&organizations[]=<%= current_user.organization.id %>">Export projects</a>
+        <% else %>
+          <a class="import_csv museo_sans shadow_black" href="http://ngoaidmap.org/downloads?format=csv&v=full&name=admin_export">Export projects</a>
+        <% end %>
         <% unless current_user.admin? || current_user.organization.blank? %>
           <a class="import_csv museo_sans shadow_black" style="margin-left: 10px;" href="http://ngoaidmap.org/iati/organizations/<%= current_user.organization.id %>?download=yes">IATI export</a>
         <% end %>
