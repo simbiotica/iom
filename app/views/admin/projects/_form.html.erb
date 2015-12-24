@@ -782,7 +782,7 @@
 <!-- ################################################ -->
 
   <div class="submit floating">
-    <%= f.submit '', :class => "#{'error' if @project.invalid? && action_name != 'new'}" %>
+    <%= f.submit '', :class => "#{'error' if @project.errors.any? && action_name != 'new'}" %>
   </div>
   <!-- END EDIT PAGE -->
 
