@@ -39,7 +39,7 @@
 <% if current_user.admin? -%>
   <div class="export_import">
     <div id="links">
-      <%= link_to 'Export Projects', admin_export_projects_path(:organization_id => @organization.to_param, :format => :xls) %>
+      <%= link_to 'Export Projects', "http://ngoaidmap.org/downloads?format=csv&v=full&name=#{@organization.name.parameterize}_export&organizations[]=#{@organization.id}" %>
       </div>
   </div>
   <div class="delete">
