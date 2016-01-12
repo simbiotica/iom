@@ -286,6 +286,9 @@ HTML
   end
 
   def downloads_query_string(options)
+    options.each do |k,v|
+      options.delete k if v == '0'
+    end
     querystring = ""
     querystring += "&status=#{options[:status]}" if options[:status]
     querystring += "&site=#{options[:site]}" if options[:site]
