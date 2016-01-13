@@ -99,7 +99,7 @@ class Project < ActiveRecord::Base
   end
 
   def set_budget_value_date
-    self.budget_value_date = self.start_date if !self.budget_value_date.present? && self.start_date.pesent?
+    self.budget_value_date = self.start_date if !self.budget_value_date && self.start_date
   end
 
   def strip_urls
@@ -131,18 +131,18 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def budget=(ammount)
-    if ammount.present?
-      case ammount
-        when String then write_attribute(:budget, ammount.delete(',').to_f)
-        else
-          if amount.to_f == 0
-            amount = nil
-          end
-          write_attribute(:budget, ammount)
-      end
-    end
-  end
+  # def budget=(ammount)
+  #   if ammount.present?
+  #     case ammount
+  #       when String then write_attribute(:budget, ammount.delete(',').to_f)
+  #       else
+  #         if amount.to_f == 0
+  #           amount = nil
+  #         end
+  #         write_attribute(:budget, ammount)
+  #     end
+  #   end
+  # end
 
   def target_project_reach=(ammount)
     if ammount.blank?
