@@ -105,8 +105,8 @@ class Admin::ProjectsController < Admin::AdminController
     else
       @organizations_ids   = organizations_ids
       @countries_iso_codes = countries_iso_codes
-      @countries = @project.country_ids.map{|id| Country.find(id)}
-      @regions = @project.region_ids.map{|id| Region.find(id)}
+      # @countries = @project.country_ids.map{|id| Country.find(id)}
+      # @regions = @project.region_ids.map{|id| Region.find(id)}
       render :action => 'new'
     end
   end

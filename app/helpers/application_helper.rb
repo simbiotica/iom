@@ -285,4 +285,19 @@ HTML
     l(date, :format => '%m/%d/%Y') if date.present?
   end
 
+  def downloads_query_string(options)
+    options.each do |k,v|
+      options.delete k if v == '0'
+    end
+    querystring = ""
+    querystring += "&status=#{options[:status]}" if options[:status]
+    querystring += "&site=#{options[:site]}" if options[:site]
+    querystring += "&sectors[]=#{options[:sector]}" if options[:sector]
+    querystring += "&organizations[]=#{options[:organizations]}" if options[:organization]
+    if options[:country] && geo = Geolocation.find(options[:country])
+      querystring += "&countries[]=#{geo.uid}"
+    end
+    querystring
+  end
+
 end
