@@ -23,11 +23,11 @@
           <%= anglo(simple_format(@donor.description)) unless @donor.description.blank? %>
           <p class="social">
             <% if @donor.twitter? %>
-              <%= link_to("follow us", "http://twitter.com/#{@donor.twitter}", :class=>"twitter", :target=>"_blank") %>
+              <%= link_to("follow us", "https://twitter.com/#{@donor.twitter}", :class=>"twitter", :target=>"_blank") %>
             <% end %>
             <% if @donor.twitter? &&  @donor.facebook? %> / <% end %>
             <% if @donor.facebook? %>
-              <%= link_to("visit our page", "http://facebook.com/#{@donor.facebook}", :class=>"facebook", :target=>"_blank") %>
+              <%= link_to("visit our page", "https://facebook.com/#{@donor.facebook}", :class=>"facebook", :target=>"_blank") %>
               <% end %>
           </p>
 

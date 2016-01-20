@@ -7,7 +7,7 @@
     <meta name="content" content="NGO Aid Map emebedded map">
     <meta name="google-site-verification" content="r4LPeTYNAKGuj7MPrkGpDgZ2ZXaKpVqn-nV7ixs5-sQ">
 
-    <%= stylesheet_link_tag "http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css", "embed.css" %>
+    <%= stylesheet_link_tag "https://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css", "embed.css" %>
 
     <% if Rails.env.development? %>
       <link rel="icon" type="image/png" href="/app/images/favicon-dev.png">
@@ -111,8 +111,8 @@
       </div>
     <% end %>
 
-    <%= javascript_include_tag "http://maps.googleapis.com/maps/api/js?key=AIzaSyA2xfzq0KmJZIlGIpxXK1CjXa6enzmPGlM&sensor=false" %>
-    <%= javascript_include_tag "http://libs.cartocdn.com/cartodb.js/v3/cartodb.js" %>
+    <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyA2xfzq0KmJZIlGIpxXK1CjXa6enzmPGlM&sensor=false" %>
+    <%= javascript_include_tag "https://libs.cartocdn.com/cartodb.js/v3/cartodb.js" %>
     <%= javascript_include_tag "../vendor/requirejs/require", "application/main" %>
 
     <% if Rails.env.production? %>
@@ -123,7 +123,7 @@
 
         (function() {
           var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'https://www') + '.google-analytics.com/ga.js';
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
       </script>

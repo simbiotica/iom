@@ -114,7 +114,7 @@ class Site < ActiveRecord::Base
   def blog_url
     url = read_attribute(:blog_url)
     if url !~ /^http:\/\// && !url.blank?
-      url = "http://#{url}"
+      url = "https://#{url}"
     end
     url
   end
