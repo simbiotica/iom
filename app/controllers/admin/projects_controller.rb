@@ -9,7 +9,7 @@ class Admin::ProjectsController < Admin::AdminController
 
     if params[:q]
       q = "%#{params[:q].sanitize_sql!}%"
-      projects = find_projects(["name ilike ? OR description ilike ? OR intervention_id ilike ? OR organization_id ilike ?", q, q, q, q])
+      projects = find_projects(["projects.name ilike ? OR description ilike ? OR intervention_id ilike ? OR organization_id ilike ?", q, q, q, q])
       from = ["projects"]
       unless params[:status].blank?
         if params[:status] == 'active'
@@ -24,7 +24,7 @@ class Admin::ProjectsController < Admin::AdminController
         if country = Geolocation.find_by_id(params[:country])
           @conditions[country.name] = {'country' => params[:country]}
           from << 'geolocations_projects'
-          projects = projects.from(from.join(',')).where("geolocations_projects.geolocation_id = #{country.id} AND geolocations_projects.project_id = projects.id")
+          projects = projects.joins(:geolocations).where('geolocations.country_uid=?', country.uid)
         end
       end
       unless params[:cluster].blank? || params[:cluster] == '0'
