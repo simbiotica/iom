@@ -54,7 +54,7 @@ class Admin::ProjectsController < Admin::AdminController
           projects = projects.where("primary_organization_id = #{params[:organization]}")
         end
       end
-      @projects = projects.paginate :per_page => 20, :order => 'name asc', :page => params[:page]
+      @projects = projects.uniq.paginate :per_page => 20, :order => 'name asc', :page => params[:page]
     elsif params[:organization_id]
       template      = 'admin/organizations/projects'
       @organization = current_user.admin?? Organization.find(params[:organization_id]) : current_user.organization

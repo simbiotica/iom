@@ -293,7 +293,7 @@ HTML
     querystring += "&status=#{options[:status]}" if options[:status]
     querystring += "&site=#{options[:site]}" if options[:site]
     querystring += "&sectors[]=#{options[:sector]}" if options[:sector]
-    querystring += "&organizations[]=#{options[:organizations]}" if options[:organization]
+    querystring += "&organizations[]=#{options[:organization]}" if options[:organization]
     if options[:country] && geo = Geolocation.find(options[:country])
       querystring += "&countries[]=#{geo.uid}"
     end
