@@ -23,7 +23,6 @@ class Admin::ProjectsController < Admin::AdminController
       unless params[:country].blank? || params[:country] == "0"
         if country = Geolocation.find_by_id(params[:country])
           @conditions[country.name] = {'country' => params[:country]}
-          from << 'geolocations_projects'
           projects = projects.joins(:geolocations).where('geolocations.country_uid=?', country.uid)
         end
       end
@@ -37,15 +36,13 @@ class Admin::ProjectsController < Admin::AdminController
       unless params[:sector].blank? || params[:sector] == '0'
         if sector = Sector.find_by_id(params[:sector])
           @conditions[sector.name] = {'sector' => params[:sector]}
-          from << 'projects_sectors'
-          projects = projects.from(from.join(',')).where("projects_sectors.sector_id = #{sector.id} AND projects_sectors.project_id = projects.id")
+          projects = projects.joins(:sectors).where('sectors.id=?', params[:sector])
         end
       end
       unless params[:site].blank? || params[:site] == '0'
         if site = Site.find(params[:site])
           @conditions[site.name] = {'site' => params[:site]}
-          from << 'projects_sites'
-          projects = projects.from(from.join(',')).where("projects_sites.site_id = #{site.id} AND projects_sites.project_id = projects.id")
+          projects = projects.joins('INNER JOIN projects_sites on projects.id = projects_sites.project_id').where('projects_sites.site_id=?', params[:site])
         end
       end
       unless params[:organization].blank? || params[:organization] == '0'
