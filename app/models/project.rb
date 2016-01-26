@@ -131,18 +131,16 @@ class Project < ActiveRecord::Base
     end
   end
 
-  # def budget=(ammount)
-  #   if ammount.present?
-  #     case ammount
-  #       when String then write_attribute(:budget, ammount.delete(',').to_f)
-  #       else
-  #         if amount.to_f == 0
-  #           amount = nil
-  #         end
-  #         write_attribute(:budget, ammount)
-  #     end
-  #   end
-  # end
+  def budget=(ammount)
+    if ammount.blank?
+      write_attribute(:budget, nil)
+    else
+      case ammount
+        when String then write_attribute(:budget, ammount.delete(',').to_f)
+        else             write_attribute(:budget, ammount)
+      end
+    end
+  end
 
   def target_project_reach=(ammount)
     if ammount.blank?
