@@ -85,18 +85,12 @@ class Project < ActiveRecord::Base
   after_commit :set_cached_sites
   after_destroy :remove_cached_sites
   before_validation :strip_urls
-  before_validation :nullify_budget
   before_validation :set_budget_value_date
 
   def countries
     Geolocation.where(:uid => self.geolocations.map{|g| g.country_uid}).uniq
   end
 
-  def nullify_budget
-    if self.budget.blank? || self.budget.to_f == 0 || self.budget == ''
-      self.budget = nil
-    end
-  end
 
   def set_budget_value_date
     self.budget_value_date = self.start_date if !self.budget_value_date && self.start_date
@@ -1069,10 +1063,13 @@ SQL
     errors.add(:end_date,    :blank ) if end_date.blank?
 
     if @budget == 0 || @budget == '' || @budget.blank?
-      self.budget = nil
+      #do nothing
     else
       begin
-        self.budget = Float(@budget)
+        case @budget
+        when String then self.budget = @budget.delete(',').to_f
+        else             self.budget = @budget
+        end
       rescue
         errors.add(:budget, "only accepts numeric values")
       end
