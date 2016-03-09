@@ -49,8 +49,8 @@ class Project < ActiveRecord::Base
   belongs_to :prime_awardee, :foreign_key => :prime_awardee_id, :class_name => 'Organization'
   has_and_belongs_to_many :clusters
   has_and_belongs_to_many :sectors
-  has_and_belongs_to_many :regions, :after_add => :add_to_country, :after_remove => :remove_from_country
-  has_and_belongs_to_many :countries
+  #has_and_belongs_to_many :regions, :after_add => :add_to_country, :after_remove => :remove_from_country
+  #has_and_belongs_to_many :countries
   has_and_belongs_to_many :geolocations
   has_and_belongs_to_many :tags, :after_add => :update_tag_counter, :after_remove => :update_tag_counter
   has_many :resources, :conditions => proc {"resources.element_type = #{Iom::ActsAsResource::PROJECT_TYPE}"}, :foreign_key => :element_id, :dependent => :destroy
@@ -74,7 +74,7 @@ class Project < ActiveRecord::Base
   validates_presence_of :sectors
   validate :location_presence,                                       :unless => lambda { sync_mode }
   validate :dates_consistency#, :presence_of_clusters_and_sectors
-  validates_format_of :website, :with => /^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/ix, :message => "URL is invalid (your changes were not saved). Make sure the web address begins with 'http://' or 'https://'.", :allow_blank => true, :if => :website_changed?
+  validates_format_of :website, :with => /^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/ix, :message => "URL is invalid (your changes were not saved). Make sure the web address begins with 'https://' or 'https://'.", :allow_blank => true, :if => :website_changed?
 
 
   #validates_uniqueness_of :intervention_id, :if => (lambda do
@@ -85,6 +85,16 @@ class Project < ActiveRecord::Base
   after_commit :set_cached_sites
   after_destroy :remove_cached_sites
   before_validation :strip_urls
+  before_validation :set_budget_value_date
+
+  def countries
+    Geolocation.where(:uid => self.geolocations.map{|g| g.country_uid}).uniq
+  end
+
+
+  def set_budget_value_date
+    self.budget_value_date = self.start_date if !self.budget_value_date && self.start_date
+  end
 
   def strip_urls
     if self.website.present?
@@ -219,7 +229,7 @@ class Project < ActiveRecord::Base
     options = {:show_private_fields => false}.merge(options || {})
 
     if options[:show_private_fields]
-      %w(organization interaction_intervention_id org_intervention_id project_tags project_name project_description activities additional_information start_date end_date clusters sectors cross_cutting_issues budget_numeric international_partners local_partners prime_awardee estimated_people_reached target_groups location verbatim_location idprefugee_camp project_contact_person project_contact_position project_contact_email project_contact_phone_number project_website date_provided date_updated status donors)
+      %w(organization interaction_intervention_id org_intervention_id project_tags project_name project_description activities additional_information start_date end_date sectors cross_cutting_issues budget_numeric international_partners local_partners prime_awardee target_project_reach actual_project_reach project_reach_unit target_groups location verbatim_location idprefugee_camp project_contact_person project_contact_position project_contact_email project_contact_phone_number project_website date_provided date_updated status donors)
     else
       %w(organization interaction_intervention_id org_intervention_id project_tags project_name project_description activities additional_information start_date end_date clusters sectors cross_cutting_issues budget_numeric international_partners local_partners prime_awardee estimated_people_reached target_groups location project_contact_person project_contact_position project_contact_email project_contact_phone_number project_website date_provided date_updated status donors)
     end
@@ -925,7 +935,11 @@ SQL
   end
 
   def budget_value_date_sync=(value)
-    self.budget_value_date = value
+    if value.present?
+      self.budget_value_date = value
+    else
+      self.budget_value_date = self.start_date if self.start_date.present?
+    end
   end
 
   def target_project_reach_sync=(value)
@@ -1036,7 +1050,7 @@ SQL
     @donors_sync = value || []
   end
 
-  def geographical_scope_sync=(value)
+  def geographic_scope_sync=(value)
     @geographical_scope_sync = value || 'specific_locations'
   end
 
@@ -1048,11 +1062,18 @@ SQL
     errors.add(:start_date,  :blank ) if start_date.blank?
     errors.add(:end_date,    :blank ) if end_date.blank?
 
-    begin
-      self.budget = Float(@budget)
-    rescue
-      errors.add(:budget, "only accepts numeric values")
-    end if @budget.present?
+    if @budget == 0 || @budget == '' || @budget.blank?
+      #do nothing
+    else
+      begin
+        case @budget
+        when String then self.budget = @budget.delete(',').to_f
+        else             self.budget = @budget
+        end
+      rescue
+        errors.add(:budget, "only accepts numeric values")
+      end
+    end
 
     begin
       self.target_project_reach = Float(@target_project_reach)
@@ -1101,10 +1122,10 @@ SQL
 
     if @prime_awardee_name.present? && (prime_awardee = Organization.where('lower(trim(name)) = lower(trim(?))', @prime_awardee_name).first) && prime_awardee.present?
       self.prime_awardee_id = prime_awardee.id
-    elsif @prime_awardee_name.present? && prime_awardee != nil
+    elsif @prime_awardee_name.present? && @prime_awardee_name != ""
       self.errors.add(:prime_awardee, %Q{"#{@prime_awardee_name}" doesn't exist})
-    else
-      self.prime_awardee_id = nil
+    elsif @prime_awardee_name == ""
+      self.prime_awardee = nil
     end
 
 
@@ -1159,8 +1180,9 @@ SQL
     end
 
     if @geographical_scope_sync
-      if @geographical_scope_sync != 'global' || @regional_scope != 'regional' || @regional_scope != 'specific_locations'
-        self.sync_errors << "Incorrect geographical scope on row #@sync_line"
+      puts "************************************************************************************#{@geographical_scope_sync}"
+      if !%w{global national specific_locations}.include? @geographical_scope_sync
+        self.sync_errors << "Incorrect geographic scope on row #@sync_line"
       else
         if @geographical_scope_sync == 'global'
           self.geolocations.clear

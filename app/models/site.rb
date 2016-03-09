@@ -114,7 +114,7 @@ class Site < ActiveRecord::Base
   def blog_url
     url = read_attribute(:blog_url)
     if url !~ /^http:\/\// && !url.blank?
-      url = "http://#{url}"
+      url = "https://#{url}"
     end
     url
   end
@@ -192,69 +192,64 @@ class Site < ActiveRecord::Base
     default_options = { :limit => 10, :offset => 0 }
     options = default_options.merge(options)
 
-    select = "projects.*"
-    from   = ["projects"]
-    where  = []
-
+    projects = Project.scoped
     # (1)
-    if project_context_cluster_id?
-      from << "clusters_projects"
-      where << "(clusters_projects.project_id = projects.id AND clusters_projects.cluster_id = #{project_context_cluster_id})"
-    end
+    # if project_context_cluster_id?
+    #   from << "clusters_projects"
+    #   where << "(clusters_projects.project_id = projects.id AND clusters_projects.cluster_id = #{project_context_cluster_id})"
+    # end
 
     # (2)
     if project_context_sector_id?
-      from << "projects_sectors"
-      where << "(projects_sectors.project_id = projects.id AND projects_sectors.sector_id = #{project_context_sector_id})"
+      # from << "projects_sectors"
+      # where << "(projects_sectors.project_id = projects.id AND projects_sectors.sector_id = #{project_context_sector_id})"
+      projects = projects.joins(:sectors).where("sectors.id='#{self.project_context_sector_id}'")
     end
 
     # (3)
     if project_context_organization_id?
-      where << "projects.primary_organization_id = #{project_context_organization_id}"
+      # where << "projects.primary_organization_id = #{project_context_organization_id}"
+      projects = projects.where('projects.primary_organization_id = #{project_context_organization_id}')
     end
 
     # (4)
     if project_context_tags_ids?
-      from << "projects_tags"
-      where << "(projects_tags.project_id = projects.id AND projects_tags.tag_id IN (#{project_context_tags_ids}))"
+      # from << "projects_tags"
+      # where << "(projects_tags.project_id = projects.id AND projects_tags.tag_id IN (#{project_context_tags_ids}))"
+      projects = projects.joins(:tags).where("tags.id IN (#{project_context_tags_ids})")
     end
 
     # (5)
     if geographic_context_country_id? && geographic_context_region_id.blank?
-      # from << "countries_projects"
-      # where << "(countries_projects.project_id = projects.id AND countries_projects.country_id = #{geographic_context_country_id})"
-      # Instead on looking in the countries, we look in the regions of the level configured in the site
-      # to get the valid projects
-      from << "countries_projects"
-      where << "(countries_projects.project_id = projects.id AND countries_projects.country_id=#{self.geographic_context_country_id})"
+      projects = projects.joins(:geolocations).where("geolocations.country_uid='#{self.geographic_context_country_id}'")
     end
 
     # (6)
-    if geographic_context_region_id?
-      from << "projects_regions"
-      where << "(projects_regions.project_id = projects.id AND projects_regions.region_id = #{geographic_context_region_id})"
-    end
+    # if geographic_context_region_id?
+    #   from << "projects_regions"
+    #   where << "(projects_regions.project_id = projects.id AND projects_regions.region_id = #{geographic_context_region_id})"
+    # end
 
     # (7)
-    if geographic_context_geometry?
-      from  << 'sites'
-      where << "ST_Intersects(sites.geographic_context_geometry,projects.the_geom)"
-    end
+    # if geographic_context_geometry?
+    #   from  << 'sites'
+    #   where << "ST_Intersects(sites.geographic_context_geometry,projects.the_geom)"
+    # end
 
-    result = Project.select(select).from(from.join(',')).where(where.join(' AND ')).group(Project.custom_fields.join(','))
+    # result = Project.select(select).from(from.join(',')).where(where.join(' AND ')).joins(joinning).group(Project.custom_fields.join(','))
 
     if options[:limit]
-      result = result.limit(options[:limit])
+      projects = projects.limit(options[:limit])
       if options[:offset]
-        result = result.offset(options[:offset])
+        projects = result.offset(options[:offset])
       end
     end
-    result
+    projects
   end
 
   # Return All the projects within the Site (already executed)
   def projects(options = {})
-    projects_sql(options.merge(:limit => nil, :offset => nil)).all
+    projects_sql(options.merge(:limit => nil, :offset => nil)).uniq
   end
 
   def level_for_region
@@ -649,88 +644,16 @@ SQL
 
     #Insert into the relation all the sites that belong to the site.
     sql="insert into projects_sites
-    select subsql.id as project_id, #{self.id} as site_id from (#{projects_sql({ :limit => nil, :offset => nil }).to_sql}) as subsql"
+    select distinct(subsql.id) as project_id, #{self.id} as site_id from (#{projects_sql({ :limit => nil, :offset => nil }).to_sql}) as subsql"
     ActiveRecord::Base.connection.execute(sql)
-    #Work on the denormalization
-
-    sql="insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,donors_ids,is_active,site_id,created_at)
-    select  * from
-           (SELECT p.id as project_id, p.name as project_name, p.description as project_description,
-           o.id as organization_id, o.name as organization_name,
-           p.start_date as start_date ,
-           p.end_date as end_date,
-           '|'||array_to_string(array_agg(distinct r.name),'|')||'|' as regions,
-           ('{'||array_to_string(array_agg(distinct r.id),',')||'}')::integer[] as regions_ids,
-           '|'||array_to_string(array_agg(distinct c.name),'|')||'|' as countries,
-           ('{'||array_to_string(array_agg(distinct c.id),',')||'}')::integer[] as countries_ids,
-           '|'||array_to_string(array_agg(distinct sec.name),'|')||'|' as sectors,
-           ('{'||array_to_string(array_agg(distinct sec.id),',')||'}')::integer[] as sector_ids,
-           '|'||array_to_string(array_agg(distinct clus.name),'|')||'|' as clusters,
-           ('{'||array_to_string(array_agg(distinct clus.id),',')||'}')::integer[] as cluster_ids,
-           ('{'||array_to_string(array_agg(distinct d.donor_id),',')||'}')::integer[] as donors_ids,
-           CASE WHEN end_date is null OR p.end_date > now() THEN true ELSE false END AS is_active,
-           ps.site_id,p.created_at
-           FROM projects as p
-           INNER JOIN organizations as o ON p.primary_organization_id=o.id
-           INNER JOIN projects_sites as ps ON p.id=ps.project_id
-           LEFT JOIN projects_regions as pr ON pr.project_id=p.id
-           LEFT JOIN regions as r ON pr.region_id=r.id and r.level=#{self.level_for_region}
-           LEFT JOIN countries_projects as cp ON cp.project_id=p.id
-           LEFT JOIN countries as c ON c.id=cp.country_id OR c.id = r.country_id
-           LEFT JOIN clusters_projects as cpro ON cpro.project_id=p.id
-           LEFT JOIN clusters as clus ON clus.id=cpro.cluster_id
-           LEFT JOIN projects_sectors as psec ON psec.project_id=p.id
-           LEFT JOIN sectors as sec ON sec.id=psec.sector_id
-           LEFT JOIN donations as d ON d.project_id=ps.project_id
-           where site_id=#{self.id}
-           GROUP BY p.id,p.name,o.id,o.name,p.description,p.start_date,p.end_date,ps.site_id,p.created_at) as subq"
-     ActiveRecord::Base.connection.execute(sql)
-
-           #We also take the opportunity to add to denormalization the projects which are orphan from a site
-           #Those projects not in a site right now also need to be handled for exports
-           sql_for_orphan_projects = """
-        insert into data_denormalization(project_id,project_name,project_description,organization_id,organization_name,
-        start_date,end_date,regions,regions_ids,countries,countries_ids,sectors,sector_ids,clusters,cluster_ids,
-        donors_ids,is_active,created_at)
-        select  * from
-          (SELECT p.id as project_id, p.name as project_name, p.description as project_description,
-                o.id as organization_id, o.name as organization_name,
-                p.start_date as start_date ,
-                p.end_date as end_date,
-                '|'||array_to_string(array_agg(distinct r.name),'|')||'|' as regions,
-                ('{'||array_to_string(array_agg(distinct r.id),',')||'}')::integer[] as regions_ids,
-                '|'||array_to_string(array_agg(distinct c.name),'|')||'|' as countries,
-                ('{'||array_to_string(array_agg(distinct c.id),',')||'}')::integer[] as countries_ids,
-                '|'||array_to_string(array_agg(distinct sec.name),'|')||'|' as sectors,
-                ('{'||array_to_string(array_agg(distinct sec.id),',')||'}')::integer[] as sector_ids,
-                '|'||array_to_string(array_agg(distinct clus.name),'|')||'|' as clusters,
-                ('{'||array_to_string(array_agg(distinct clus.id),',')||'}')::integer[] as cluster_ids,
-                ('{'||array_to_string(array_agg(distinct d.donor_id),',')||'}')::integer[] as donors_ids,
-                CASE WHEN end_date is null OR p.end_date > now() THEN true ELSE false END AS is_active,
-                p.created_at
-                FROM projects as p
-                INNER JOIN organizations as o ON p.primary_organization_id=o.id
-                LEFT JOIN projects_regions as pr ON pr.project_id=p.id
-                LEFT JOIN regions as r ON pr.region_id=r.id
-                LEFT JOIN countries_projects as cp ON cp.project_id=p.id
-                LEFT JOIN countries as c ON c.id=cp.country_id
-                LEFT JOIN clusters_projects as cpro ON cpro.project_id=p.id
-                LEFT JOIN clusters as clus ON clus.id=cpro.cluster_id
-                LEFT JOIN projects_sectors as psec ON psec.project_id=p.id
-                LEFT JOIN sectors as sec ON sec.id=psec.sector_id
-                LEFT JOIN donations as d ON d.project_id=p.id
-                where p.id not in (select project_id from projects_sites)
-                GROUP BY p.id,p.name,o.id,o.name,p.description,p.start_date,p.end_date,p.created_at) as subq"""
-    ActiveRecord::Base.connection.execute(sql_for_orphan_projects)
-
     Rails.cache.clear
 
   end
 
   def remove_cached_projects
     ActiveRecord::Base.connection.execute("DELETE FROM projects_sites WHERE site_id = #{self.id}")
-    ActiveRecord::Base.connection.execute("DELETE FROM data_denormalization WHERE site_id = #{self.id}")
-    ActiveRecord::Base.connection.execute("DELETE FROM data_denormalization WHERE site_id = null")
+    # ActiveRecord::Base.connection.execute("DELETE FROM data_denormalization WHERE site_id = #{self.id}")
+    # ActiveRecord::Base.connection.execute("DELETE FROM data_denormalization WHERE site_id = null")
   end
 
   def projects_for_csv

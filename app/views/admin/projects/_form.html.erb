@@ -329,7 +329,7 @@
         <div class="field">
           <p class="title">BUDGET CURRENCY </p>
           <span class="input_short">
-            <%= f.text_field :budget_currency %>
+            <%= f.text_field :budget_currency, :value => (@project.budget_currency.present? ? @project.budget_currency : 'USD') %>
           </span>
         </div> <!-- field -->
       </div>
@@ -523,7 +523,7 @@
   <div class="field">
     <label>PROJECT REACH UNIT</label>
     <span class="input_short">
-      <%= f.text_field :project_reach_unit %>
+      <%= f.text_field :project_reach_unit, :value => lambda{@project.project_reach_unit.present? ? @project.project_reach_unit : 'individuals'}.call %>
     </span>
   </div>
   <div class="field">
@@ -566,7 +566,7 @@
 <!-- ##################### LOCATION ##################### -->
 
   <h3 class="section museo_sans">LOCATION</h3>
-  <label>GEOGRAPHICAL SCOPE
+  <label>GEOGRAPHIC SCOPE
     <strong>&nbsp;</strong>
     <div class="field_info">
       <span class="info">i</span>
@@ -575,7 +575,7 @@
           <a href="#close">x</a>
         </div>
         <div class="bottom">
-          <h3>GEOGRAPHICAL SCOPE</h3>
+          <h3>GEOGRAPHIC SCOPE</h3>
           <span class="scroll">
           <p>If your project is national or global in scope - meaning it does not take place in specific locations - please select either "National" or "Global" from the drop down menu. If either of these options is selected, you will not be able to provide sub-national location information.</p>
           </span>
@@ -781,7 +781,7 @@
 <!-- ################################################ -->
 
   <div class="submit floating">
-    <%= f.submit '', :class => "#{'error' if @project.invalid? && action_name != 'new'}" %>
+    <%= f.submit '', :class => "#{'error' if @project.errors.any? && action_name != 'new'}" %>
   </div>
   <!-- END EDIT PAGE -->
 
