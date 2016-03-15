@@ -358,15 +358,14 @@
               <!-- END FIELD DESCRIPTION -->
               </label>
 
-              <span class="combo_date <%= 'error' if @project.errors[:budget_value_date].present? && action_name != 'new' %>"><p>
-                <%= @project.budget_value_date.present? ? @project.budget_value_date.strftime("%m/%d/%Y") : (@project.start_date.present? ? @project.start_date.strftime("%m/%d/%Y") : '') %></p>
+              <span class="combo_date <%= 'error' if @project.errors[:budget_value_date].present? && action_name != 'new' %>">
+              <p><%= @project.budget_value_date.present? ? @project.budget_value_date.strftime("%m/%d/%Y") : (@project.start_date.present? ? @project.start_date.strftime("%m/%d/%Y") : '') %></p>
               <%= errors_for @project, :budget_value_date %>
               <div class="select_dates">
                 <p id="month" class="title">MONTH</p>
                 <p id="day" class="title">DAY</p>
                 <p id="year" class="title">YEAR</p>
-
-                <%= f.date_select :budget_value_date, { :start_year => 1970, :end_year=>100.years.since.year, :default => @project.start_date, :order => [:month, :day, :year]}, { :class => :"chzn-date-select", :"data-placeholder" => ' '}  %>
+                <%= f.date_select :budget_value_date, { :start_year => 1970, :end_year=>100.years.since.year, :order => [:month, :day, :year],  :prompt => '-'}, { :class => :"chzn-date-select", :"data-placeholder" => ' '}  %>
               </div>
               </span>
             </li>
