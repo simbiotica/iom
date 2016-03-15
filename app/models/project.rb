@@ -1155,9 +1155,14 @@ SQL
               # IF country exits, checks for its children regions
               if regions.present?
                 regions.each_with_index do |region_name, level|
+                  puts region_name
                   level += 1
+                  if level == 1
                   # Check that exists the region, with this level for this country
-                  region = Geolocation.where('lower(trim(name)) = lower(trim(?)) AND adm_level=? AND country_uid=?', region_name,level,country.uid).first
+                    region = Geolocation.where('lower(trim(name)) = lower(trim(?)) AND adm_level=? AND country_uid=?', region_name,level,country.uid).first
+                  elsif regions_parsed.size < regions_count
+                    region = Geolocation.where("lower(trim(name)) = lower(trim(?)) AND g#{level-1}=? AND country_uid=?", region_name,regions_parsed[level-2].uid, country.uid).first
+                  end
                   if region.blank?
                     self.sync_errors << "#{level.ordinalize} Admin level #{region_name} doesn't exist on row #@sync_line"
                     errors.add(:region,  "#{region_name} doesn't exist with level #{level} for country #{country_name}")

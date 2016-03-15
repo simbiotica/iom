@@ -151,12 +151,12 @@ module ProjectsHelper
       breadcrumbs << current_breadcrumb
     end
     result = breadcrumbs.reject { |b| b.nil? }.reverse.join(" > ")
-    if result.size > 30
-      list = result.split(' > ')
-      return ([list.first] + ['...'] + [list[-2..-1]]).join(' > ')
-    else
-      return result
-    end
+    # if result.size > 30
+    #   list = result.split(' > ')
+    #   return ([list.first] + ['...'] + [list[-2..-1]]).join(' > ')
+    # else
+    #   return result
+    # end
   end
 
 end
